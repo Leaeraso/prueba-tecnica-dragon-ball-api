@@ -4,8 +4,29 @@
   "description": "Prueba técnica Kairox Dragon Ball API",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsc && node build/index.js",
+    "start:dev": "tsc && concurrently \"tsc -w\" \"nodemon build/index.js\""
   },
   "author": "Leandro Eraso",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "concurrently": "^9.1.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "js-yaml": "^4.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.10.0",
+    "mongoose-paginate-v2": "^1.9.0",
+    "nodemailer": "^6.10.0",
+    "nodemon": "^3.1.9",
+    "swagger-ui-express": "^5.0.1",
+    "typescript": "^5.7.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0"
+  }
 }
