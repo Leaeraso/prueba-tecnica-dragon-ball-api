@@ -1,0 +1,29 @@
+openapi: 3.0.3
+info:
+  title: Prueba técnica Kairox - Dragon Ball API
+  description: "Documentacion para prueba técnica Kairox - Dragon Ball API"
+  version: 1.0.0
+paths:
+  /test:
+    get:
+      tags:
+        - Test
+      summary: Testing endpoint
+      responses:
+        200:
+          description: Successfull SignIn
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestResponse'
+components:
+  schemas:
+    TestResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        status:
+          type: integer
+parameters:
+  
