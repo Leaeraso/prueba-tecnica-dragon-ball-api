@@ -14,6 +14,7 @@ class CharacterRoute {
       '/fetch-characters-data',
       CharacterController.handleFetchCharacters.bind(this)
     );
+    this.router.get('/characters');
   }
 }
 
