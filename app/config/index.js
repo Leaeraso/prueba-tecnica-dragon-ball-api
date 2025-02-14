@@ -12,4 +12,5 @@ exports.default = {
     HTTP_PORT: Number(process.env.HTTP_PORT) || 9000,
     API_URL: process.env.API_URL,
     MONGO_DB_URL: process.env.MONGO_DB_URL,
+    FETCH_URI: process.env.FETCH_URI,
 };
