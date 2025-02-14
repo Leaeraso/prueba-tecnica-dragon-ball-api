@@ -6,6 +6,7 @@ import router from './routes/index';
 import swaggerUi, { JsonObject } from 'swagger-ui-express';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
+import requestLogger from './middlewares/logging-middleware';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ const swaggerDoc = yaml.load(
 ) as JsonObject;
 
 app.use(express.json());
+app.use(requestLogger);
 app.use(router);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
