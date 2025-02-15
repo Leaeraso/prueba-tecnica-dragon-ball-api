@@ -11,3 +11,14 @@ export interface characterDto {
   description: string;
   image: string;
 }
+
+export interface normalizedCharacterDto {
+  id: number;
+  name: string;
+  ki: number | null;
+  maxKi: number | null;
+  race: RaceEnum;
+  gender: GenderEnum;
+  description: string;
+  image: string;
+}

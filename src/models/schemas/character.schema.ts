@@ -6,8 +6,8 @@ const CharacterSchema = new mongoose.Schema<Character>(
   {
     id: Number,
     name: String,
-    ki: String,
-    max_ki: { type: String, alias: 'maxKi' },
+    ki: Number,
+    max_ki: { type: Number, alias: 'maxKi' },
     race: String,
     gender: String,
     description: String,

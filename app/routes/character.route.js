@@ -12,6 +12,11 @@ class CharacterRoute {
     }
     createRoutes() {
         this.router.get('/fetch-characters-data', character_controller_1.default.handleFetchCharacters.bind(this));
+        this.router.get('/characters', character_controller_1.default.handleGetCharacters.bind(this));
+        this.router.get('/characters/:id', character_controller_1.default.handleGetCharacterById.bind(this));
+        this.router.post('/characters', character_controller_1.default.handleCreateCharacter.bind(this));
+        this.router.put('/characters/:id', character_controller_1.default.handleUpdateCharacter.bind(this));
+        this.router.delete('/characters/:id', character_controller_1.default.handleDeleteCharacter.bind(this));
     }
 }
 exports.default = new CharacterRoute().router;

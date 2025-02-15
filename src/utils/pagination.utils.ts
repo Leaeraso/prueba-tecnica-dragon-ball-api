@@ -2,12 +2,14 @@ import { generalSearchDto } from '../data/dtos/general-search.dto';
 import { SortEnum } from '../data/enums/sort.enum';
 
 export const pagination = (queryParams: generalSearchDto) => {
-  const sortOptions: Record<string, 1 | -1> = {
-    [queryParams.sort || 'name']:
-      queryParams.sort_dir?.toUpperCase() == 'ASC'
-        ? SortEnum.ASC
-        : SortEnum.DESC || SortEnum.ASC,
-  };
+  const sortOptions: Record<string, 1 | -1> = {};
+
+  if (queryParams.sort) {
+    sortOptions[queryParams.sort] =
+      queryParams.sort_dir === 'ASC' ? SortEnum.ASC : SortEnum.DESC;
+  } else if (queryParams.ki_min || queryParams.ki_max) {
+    sortOptions['ki'] = SortEnum.ASC;
+  }
 
   const options = {
     page: queryParams.page || 1,

@@ -41,8 +41,8 @@ const mongoose_paginate_v2_1 = __importDefault(require("mongoose-paginate-v2"));
 const CharacterSchema = new mongoose_1.default.Schema({
     id: Number,
     name: String,
-    ki: String,
-    max_ki: { type: String, alias: 'maxKi' },
+    ki: Number,
+    max_ki: { type: Number, alias: 'maxKi' },
     race: String,
     gender: String,
     description: String,

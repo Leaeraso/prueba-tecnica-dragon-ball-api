@@ -11,5 +11,4 @@ export interface generalSearchDto {
   sort_dir?: string;
   ki_min?: number;
   ki_max?: number;
-  max_ki?: number;
 }

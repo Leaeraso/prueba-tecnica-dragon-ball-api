@@ -1,19 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RACE_ENUM = void 0;
-var RACE_ENUM;
-(function (RACE_ENUM) {
-    RACE_ENUM["SAIYAN"] = "Saiyan";
-    RACE_ENUM["NAMEKIAN"] = "Namekian";
-    RACE_ENUM["HUMAN"] = "Human";
-    RACE_ENUM["FRIEZA_RACE"] = "Frieza Race";
-    RACE_ENUM["ANDROID"] = "Android";
-    RACE_ENUM["MAJIN"] = "Majin";
-    RACE_ENUM["GOD"] = "God";
-    RACE_ENUM["ANGEL"] = "Angel";
-    RACE_ENUM["UNKNOWN"] = "Unknown";
-    RACE_ENUM["JIREN_RACE"] = "Jiren Race";
-    RACE_ENUM["NUCLEICO_BENIGNO"] = "Nucleico benigno";
-    RACE_ENUM["EVIL"] = "Evil";
-    RACE_ENUM["NUCLEICO"] = "Nucleico";
-})(RACE_ENUM || (exports.RACE_ENUM = RACE_ENUM = {}));
+exports.RaceEnum = void 0;
+var RaceEnum;
+(function (RaceEnum) {
+    RaceEnum["Saiyan"] = "Saiyan";
+    RaceEnum["Namekian"] = "Namekian";
+    RaceEnum["Human"] = "Human";
+    RaceEnum["Frieza"] = "Frieza Race";
+    RaceEnum["Android"] = "Android";
+    RaceEnum["Majin"] = "Majin";
+    RaceEnum["God"] = "God";
+    RaceEnum["Angel"] = "Angel";
+    RaceEnum["Unknown"] = "Unknown";
+    RaceEnum["Jiren"] = "Jiren Race";
+    RaceEnum["Nucleico_benigno"] = "Nucleico benigno";
+    RaceEnum["Evil"] = "Evil";
+    RaceEnum["Nucleico"] = "Nucleico";
+})(RaceEnum || (exports.RaceEnum = RaceEnum = {}));
