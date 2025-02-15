@@ -6,7 +6,7 @@ import router from './routes/index';
 import swaggerUi, { JsonObject } from 'swagger-ui-express';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
-import requestLogger from './middlewares/logging-middleware';
+import morgan from 'morgan';
 
 dotenv.config();
 
@@ -15,9 +15,10 @@ const PORT = config.HTTP_PORT!;
 const swaggerDoc = yaml.load(
   fs.readFileSync('./src/config/docs/swagger-documentation.yaml', 'utf8')
 ) as JsonObject;
+morgan.token('time', () => new Date().toISOString());
 
 app.use(express.json());
-app.use(requestLogger);
+app.use(morgan(':method :url :time'));
 app.use(router);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
