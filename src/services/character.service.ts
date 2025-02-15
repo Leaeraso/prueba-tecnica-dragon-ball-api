@@ -10,6 +10,7 @@ import { pagination } from '../utils/pagination.utils';
 import { BadRequestError, NotFoundError } from '../config/errors';
 import { ErrorMessage } from '../config/errors/messages.enum';
 import { SuffixesEnum } from '../data/enums/suffixes.enum';
+import validateData from '../helpers/validate.helper';
 
 interface ApiResponse {
   items: any[];
@@ -135,6 +136,8 @@ class CharacterService {
   }
 
   async createCharacter(character: characterDto) {
+    await validateData(character, CharacterModel);
+
     const existingCharacter = await CharacterModel.findOne({
       name: character.name,
     });
@@ -152,6 +155,8 @@ class CharacterService {
   }
 
   async updateCharacter(id: string, character: Partial<characterDto>) {
+    await validateData(character, CharacterModel);
+
     const updatedCharacter = await CharacterModel.findOneAndUpdate(
       { id: id },
       character,
