@@ -36,22 +36,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const dotenv_1 = __importDefault(require("dotenv"));
-const index_1 = __importDefault(require("./config/index"));
-const mongoose_config_1 = __importDefault(require("./config/mongoose.config"));
-const index_2 = __importDefault(require("./routes/index"));
-const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
-const yaml = __importStar(require("js-yaml"));
-const fs = __importStar(require("fs"));
-dotenv_1.default.config();
-const app = (0, express_1.default)();
-const PORT = index_1.default.HTTP_PORT;
-const swaggerDoc = yaml.load(fs.readFileSync('./src/config/docs/swagger-documentation.yaml', 'utf8'));
-app.use(express_1.default.json());
-app.use(index_2.default);
-app.use('/api-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerDoc));
-mongoose_config_1.default.getConntection();
-app.listen(PORT, () => {
-    console.log(`Server running on ${index_1.default.API_URL}:${PORT}`);
+const mongoose_1 = __importStar(require("mongoose"));
+const mongoose_paginate_v2_1 = __importDefault(require("mongoose-paginate-v2"));
+const CharacterSchema = new mongoose_1.default.Schema({
+    id: Number,
+    name: String,
+    ki: Number,
+    max_ki: { type: Number, alias: 'maxKi' },
+    race: String,
+    gender: String,
+    description: String,
+    image: String,
+}, {
+    timestamps: true,
 });
+CharacterSchema.plugin(mongoose_paginate_v2_1.default);
+const CharacterModel = (0, mongoose_1.model)('Character', CharacterSchema, 'characters');
+exports.default = CharacterModel;

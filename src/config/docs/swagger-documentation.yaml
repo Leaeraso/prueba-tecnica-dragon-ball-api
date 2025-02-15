@@ -15,7 +15,118 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TestResponse'
+                $ref: "#/components/schemas/TestResponse"
+  /fetch-characters-data:
+    get:
+      tags:
+        - Characters
+      summary: Fetch and saves characters data
+      responses:
+        200:
+          description: Data obtained and saved successfully
+        404:
+          description: Invalid API response
+        500:
+          description: Internal server error
+  /characters:
+    get:
+      tags:
+        - Characters
+      summary: Get characters
+      parameters:
+        - $ref: "#/parameters/search"
+        - $ref: "#/parameters/page"
+        - $ref: "#/parameters/page_size"
+        - $ref: "#/parameters/sort"
+        - $ref: "#/parameters/sort_dir"
+        - $ref: "#/parameters/ki_min"
+        - $ref: "#/parameters/ki_max"
+      responses:
+        200:
+          description: Character's array
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CharacterWithId"
+        500:
+          description: Internal server error
+    post:
+      tags:
+        - Characters
+      summary: Create character
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Character"
+      responses:
+        201:
+          description: Character's object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CharacterWithId"
+        400:
+          description: Character already exists
+        500:
+          description: Internal server error
+  /characters/{id}:
+    get:
+      tags:
+        - Characters
+      summary: Get character
+      parameters:
+        - $ref: "#/parameters/id"
+      responses:
+        200:
+          description: Character's object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CharacterWithId"
+        404:
+          description: Character not found
+        500:
+          description: Internal server error
+    put:
+      tags:
+        - Characters
+      summary: Update character
+      parameters:
+        - $ref: "#/parameters/id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Character"
+      responses:
+        200:
+          description: Updated character
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CharacterWithId"
+        404:
+          description: Character not found
+        500:
+          description: Internal server error
+    delete:
+      tags:
+        - Characters
+      summary: Delete character
+      parameters:
+        - $ref: "#/parameters/id"
+      responses:
+        200:
+          description: Character deleted successfully
+        404:
+          description: Character not found
+        500:
+          description: Internal server error
 components:
   schemas:
     TestResponse:
@@ -25,5 +136,122 @@ components:
           type: string
         status:
           type: integer
+    Character:
+      type: object
+      properties:
+        ki:
+          type: number
+        max_ki:
+          type: number
+        name:
+          type: string
+        race:
+          type: string
+          enum:
+            - Saiyan
+            - Namekian
+            - Human
+            - Frieza
+            - Android
+            - Majin
+            - God
+            - Angel
+            - Unknown
+            - Jiren
+            - Nucleico_beningno
+            - Evil
+            - Nucleico
+        gender:
+          type: string
+          enum:
+            - Male
+            - Female
+        description:
+          type: string
+        image:
+          type: string
+    CharacterWithId:
+      type: object
+      properties:
+        id:
+          type: number
+        ki:
+          type: number
+        max_ki:
+          type: number
+        race:
+          type: string
+          enum:
+            - Saiyan
+            - Namekian
+            - Human
+            - Frieza
+            - Android
+            - Majin
+            - God
+            - Angel
+            - Unknown
+            - Jiren
+            - Nucleico_beningno
+            - Evil
+            - Nucleico
+        gender:
+          type: string
+          enum:
+            - Male
+            - Female
+        description:
+          type: string
+        image:
+          type: string
 parameters:
-  
+  id:
+    name: id
+    in: path
+    required: true
+    schema:
+      type: string
+  page:
+    name: page
+    in: query
+    description: Page number
+    schema:
+      type: number
+      example: 1
+  page_size:
+    name: page_size
+    in: query
+    description: Page size
+    schema:
+      type: number
+      example: 10
+  search:
+    name: search
+    in: query
+    description: Search
+    schema:
+      type: string
+  sort:
+    name: sort
+    in: query
+    description: Sort
+    schema:
+      type: string
+  sort_dir:
+    name: sort_dir
+    in: query
+    description: Sort direction
+    schema:
+      type: string
+  ki_min:
+    name: ki_min
+    in: query
+    description: Ki min's character
+    schema:
+      type: string
+  ki_max:
+    name: ki_max
+    in: query
+    description: Ki Max's character
+    schema:
+      type: string
