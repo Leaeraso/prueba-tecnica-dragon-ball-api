@@ -101,7 +101,7 @@ class CharacterService {
     }
     getCharacterById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const affiliate = yield character_schema_1.default.findById(id);
+            const affiliate = yield character_schema_1.default.findOne({ id: id });
             if (!affiliate)
                 throw new errors_1.NotFoundError(messages_enum_1.ErrorMessage.CharacterNotFound);
             return affiliate;
@@ -123,7 +123,7 @@ class CharacterService {
     }
     updateCharacter(id, character) {
         return __awaiter(this, void 0, void 0, function* () {
-            const updatedCharacter = yield character_schema_1.default.findByIdAndUpdate({ id: id }, character, { new: true });
+            const updatedCharacter = yield character_schema_1.default.findOneAndUpdate({ id: id }, character, { new: true });
             if (!updatedCharacter)
                 throw new errors_1.NotFoundError(messages_enum_1.ErrorMessage.CharacterNotFound);
             return updatedCharacter;
@@ -131,7 +131,7 @@ class CharacterService {
     }
     deleteCharacter(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const deletedCharacter = yield character_schema_1.default.findByIdAndDelete(id);
+            const deletedCharacter = yield character_schema_1.default.findOneAndDelete({ id: id });
             if (!deletedCharacter)
                 throw new errors_1.NotFoundError(messages_enum_1.ErrorMessage.CharacterNotFound);
             return { message: 'Character deleted successfully' };

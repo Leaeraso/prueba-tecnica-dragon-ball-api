@@ -27,7 +27,7 @@ class CharacterController {
     handleCreateCharacter(req, res, next) {
         character_service_1.default.createCharacter(req.body)
             .then((result) => {
-            res.json(result);
+            res.status(201).json(result);
         })
             .catch((err) => next(err));
     }

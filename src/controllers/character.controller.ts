@@ -39,7 +39,7 @@ class CharacterController {
   ) {
     CharacterService.createCharacter(req.body)
       .then((result) => {
-        res.json(result);
+        res.status(201).json(result);
       })
       .catch((err) => next(err));
   }

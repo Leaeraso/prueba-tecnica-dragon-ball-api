@@ -127,7 +127,7 @@ class CharacterService {
   }
 
   async getCharacterById(id: string) {
-    const affiliate = await CharacterModel.findById(id);
+    const affiliate = await CharacterModel.findOne({ id: id });
 
     if (!affiliate) throw new NotFoundError(ErrorMessage.CharacterNotFound);
 
@@ -152,7 +152,7 @@ class CharacterService {
   }
 
   async updateCharacter(id: string, character: Partial<characterDto>) {
-    const updatedCharacter = await CharacterModel.findByIdAndUpdate(
+    const updatedCharacter = await CharacterModel.findOneAndUpdate(
       { id: id },
       character,
       { new: true }
@@ -165,7 +165,7 @@ class CharacterService {
   }
 
   async deleteCharacter(id: string) {
-    const deletedCharacter = await CharacterModel.findByIdAndDelete(id);
+    const deletedCharacter = await CharacterModel.findOneAndDelete({ id: id });
 
     if (!deletedCharacter)
       throw new NotFoundError(ErrorMessage.CharacterNotFound);

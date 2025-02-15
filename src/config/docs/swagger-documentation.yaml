@@ -26,6 +26,8 @@ paths:
           description: Data obtained and saved successfully
         404:
           description: Invalid API response
+        500:
+          description: Internal server error
   /characters:
     get:
       tags:
