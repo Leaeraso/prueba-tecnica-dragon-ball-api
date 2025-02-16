@@ -1,5 +1,6 @@
 import express from 'express';
 import CharacterController from '../controllers/character.controller';
+import validateToken from '../middlewares/validate-token.middleware';
 
 class CharacterRoute {
   public router: express.Router;
@@ -24,14 +25,17 @@ class CharacterRoute {
     );
     this.router.post(
       '/characters',
+      validateToken,
       CharacterController.handleCreateCharacter.bind(this)
     );
     this.router.put(
       '/characters/:id',
+      validateToken,
       CharacterController.handleUpdateCharacter.bind(this)
     );
     this.router.delete(
       '/characters/:id',
+      validateToken,
       CharacterController.handleDeleteCharacter.bind(this)
     );
   }
