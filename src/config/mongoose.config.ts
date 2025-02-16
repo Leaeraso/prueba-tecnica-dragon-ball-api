@@ -8,6 +8,7 @@ class MongoConnection {
   private options: mongoose.ConnectOptions = {
     autoIndex: false,
     family: 4,
+    connectTimeoutMS: 30000,
   };
 
   private constructor() {

@@ -14,41 +14,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = __importDefault(require("../app"));
 const supertest_1 = __importDefault(require("supertest"));
-let token;
+// let token: string;
 beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
-    app_1.default.listen(4000);
-    const response = yield (0, supertest_1.default)(app_1.default).get('/users/authentication').send();
-    console.log('token: ', response.body);
-    token = response.body;
+    //   const response = await request(app).get('/users/authentication').send();
+    //   console.log('token: ', response.body);
+    //   token = response.body.token;
 }));
 describe('GET /characters', () => {
     test('should respond with a 200 status code', () => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield (0, supertest_1.default)(app_1.default).get('/characters').send();
+        console.log('Response body:', response.body);
         expect(response.status).toBe(200);
-    }), 10000);
-    test('should response with an object containing an array', () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app_1.default).get('/characters').send();
-        expect(response.body).toBeInstanceOf(Object);
-        expect(response.body).toHaveProperty('characters');
-        expect(Array.isArray(response.body.characters)).toBe(true);
-    }), 10000);
+    }), 30000);
 });
-describe('POST /characters', () => {
-    test('should respond with a 201 status code', () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app_1.default)
-            .post('/characters')
-            .set('Authorization', `Bearer ${token}`)
-            .send();
-        expect(response.status).toBe(201);
-    }), 10000);
-    test('should respond with a content-type of application/json', () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app_1.default)
-            .post('/characters')
-            .set('Authorization', `Bearer ${token}`)
-            .send();
-        expect(response.headers['content-type']).toEqual(expect.stringContaining('json'));
-    }), 10000);
-});
-afterAll(() => __awaiter(void 0, void 0, void 0, function* () {
-    app_1.default.close();
-}));

@@ -16,7 +16,10 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 class UserService {
     getToken() {
         return __awaiter(this, void 0, void 0, function* () {
-            return jsonwebtoken_1.default.sign({}, 'secret', { expiresIn: '1d' });
+            const token = jsonwebtoken_1.default.sign({}, 'secret', { expiresIn: '1d' });
+            return {
+                token: token,
+            };
         });
     }
 }

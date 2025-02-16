@@ -20,6 +20,7 @@ class MongoConnection {
         this.options = {
             autoIndex: false,
             family: 4,
+            connectTimeoutMS: 30000,
         };
         this.connect();
     }

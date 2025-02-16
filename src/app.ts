@@ -4,6 +4,7 @@ import swaggerUi, { JsonObject } from 'swagger-ui-express';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
 import morgan from 'morgan';
+import errorMiddleware from './middlewares/error.middleware';
 
 const app = express();
 
@@ -15,6 +16,7 @@ morgan.token('time', () => new Date().toISOString());
 app.use(express.json());
 app.use(morgan(':method :url :time'));
 app.use(router);
+app.use(errorMiddleware);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
 export default app;
