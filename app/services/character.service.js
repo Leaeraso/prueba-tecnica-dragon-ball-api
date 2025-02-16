@@ -19,6 +19,7 @@ const pagination_utils_1 = require("../utils/pagination.utils");
 const errors_1 = require("../config/errors");
 const messages_enum_1 = require("../config/errors/messages.enum");
 const suffixes_enum_1 = require("../data/enums/suffixes.enum");
+const validate_helper_1 = __importDefault(require("../helpers/validate.helper"));
 const parseKi = (ki) => {
     const normalizedKi = ki.toLowerCase().replace(/[,.]/g, '');
     if (!isNaN(Number(normalizedKi))) {
@@ -109,6 +110,7 @@ class CharacterService {
     }
     createCharacter(character) {
         return __awaiter(this, void 0, void 0, function* () {
+            yield (0, validate_helper_1.default)(character, character_schema_1.default);
             const existingCharacter = yield character_schema_1.default.findOne({
                 name: character.name,
             });
@@ -123,6 +125,7 @@ class CharacterService {
     }
     updateCharacter(id, character) {
         return __awaiter(this, void 0, void 0, function* () {
+            yield (0, validate_helper_1.default)(character, character_schema_1.default);
             const updatedCharacter = yield character_schema_1.default.findOneAndUpdate({ id: id }, character, { new: true });
             if (!updatedCharacter)
                 throw new errors_1.NotFoundError(messages_enum_1.ErrorMessage.CharacterNotFound);

@@ -5,4 +5,5 @@ var ErrorMessage;
 (function (ErrorMessage) {
     ErrorMessage["CharacterNotFound"] = "Character not found";
     ErrorMessage["CharacterAlreadyExists"] = "Character already exists";
+    ErrorMessage["InvalidToken"] = "Invalid token";
 })(ErrorMessage || (exports.ErrorMessage = ErrorMessage = {}));

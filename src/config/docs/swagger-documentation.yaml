@@ -16,7 +16,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TestResponse"
-  /fetch-characters-data:
+  /users/authentication:
+    get:
+      tags:
+        - Users
+      summary: Get token
+      responses:
+        200:
+          description: Return token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserToken"
+        500:
+          description: Internal server error
+  /fetch-caracters-data:
     get:
       tags:
         - Characters
@@ -26,8 +40,8 @@ paths:
           description: Data obtained and saved successfully
         404:
           description: Invalid API response
-        500:
-          description: Internal server error
+      security:
+        - bearerAuth: []
   /characters:
     get:
       tags:
@@ -41,6 +55,7 @@ paths:
         - $ref: "#/parameters/sort_dir"
         - $ref: "#/parameters/ki_min"
         - $ref: "#/parameters/ki_max"
+        - $ref: "#/parameters/max_ki"
       responses:
         200:
           description: Character's array
@@ -73,6 +88,8 @@ paths:
           description: Character already exists
         500:
           description: Internal server error
+      security:
+        - bearerAuth: []
   /characters/{id}:
     get:
       tags:
@@ -114,6 +131,8 @@ paths:
           description: Character not found
         500:
           description: Internal server error
+      security:
+        - bearerAuth: []
     delete:
       tags:
         - Characters
@@ -127,6 +146,8 @@ paths:
           description: Character not found
         500:
           description: Internal server error
+      security:
+        - bearerAuth: []
 components:
   schemas:
     TestResponse:
@@ -136,15 +157,20 @@ components:
           type: string
         status:
           type: integer
+    UserToken:
+      type: object
+      properties:
+        token:
+          type: string
     Character:
       type: object
       properties:
+        name:
+          type: string
         ki:
           type: number
         max_ki:
           type: number
-        name:
-          type: string
         race:
           type: string
           enum:
@@ -175,6 +201,8 @@ components:
       properties:
         id:
           type: number
+        name:
+          type: string
         ki:
           type: number
         max_ki:
@@ -204,6 +232,11 @@ components:
           type: string
         image:
           type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 parameters:
   id:
     name: id
@@ -248,10 +281,16 @@ parameters:
     in: query
     description: Ki min's character
     schema:
-      type: string
+      type: number
   ki_max:
     name: ki_max
     in: query
     description: Ki Max's character
+    schema:
+      type: number
+  max_ki:
+    name: max_ki
+    in: query
+    description: Max ki reached by a character
     schema:
       type: string

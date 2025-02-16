@@ -13,6 +13,7 @@ class CharacterRoute {
   createRoutes(): void {
     this.router.get(
       '/fetch-characters-data',
+      validateToken,
       CharacterController.handleFetchCharacters.bind(this)
     );
     this.router.get(
