@@ -24,6 +24,10 @@ class CharacterRoute {
       '/characters/:id',
       CharacterController.handleGetCharacterById.bind(this)
     );
+    this.router.get(
+      '/export-excel',
+      CharacterController.handleExportCharactersToExcel.bind(this)
+    );
     this.router.post(
       '/characters',
       validateToken,

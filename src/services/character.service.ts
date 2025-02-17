@@ -11,6 +11,7 @@ import { BadRequestError, NotFoundError } from '../config/errors';
 import { ErrorMessage } from '../config/errors/messages.enum';
 import { SuffixesEnum } from '../data/enums/suffixes.enum';
 import validateData from '../helpers/validate.helper';
+import exceljs from 'exceljs';
 
 interface ApiResponse {
   items: any[];
@@ -176,6 +177,62 @@ class CharacterService {
       throw new NotFoundError(ErrorMessage.CharacterNotFound);
 
     return { message: 'Character deleted successfully' };
+  }
+
+  async exportCharactersToExcel(queryParams: generalSearchDto) {
+    const { options } = pagination(queryParams);
+
+    const query: Record<string, any> = {
+      ...(queryParams.search && {
+        $or: [
+          { name: { $regex: queryParams.search, $options: 'i' } },
+          { description: { $regex: queryParams.search, $options: 'i' } },
+        ],
+      }),
+      ...(queryParams.race && { race: queryParams.race }),
+      ...(queryParams.gender && { gender: queryParams.gender }),
+    };
+
+    if (queryParams.ki_min || queryParams.ki_max) {
+      query.ki = Object.assign(
+        {},
+        queryParams.ki_min && { $gte: queryParams.ki_min },
+        queryParams.ki_max && { $lte: queryParams.ki_max }
+      );
+    }
+
+    const characters = await CharacterModel.find(query)
+      .sort(options.sort)
+      .select('id name ki max_ki race gender description');
+
+    const workbook = new exceljs.Workbook();
+    const worksheet = workbook.addWorksheet('Characters');
+
+    worksheet.columns = [
+      { header: 'id', key: 'id', width: 10 },
+      { header: 'name', key: 'name', width: 20 },
+      { header: 'ki', key: 'ki', width: 20 },
+      { header: 'maxKi', key: 'maxKi', width: 20 },
+      { header: 'race', key: 'race', width: 20 },
+      { header: 'gender', key: 'gender', width: 20 },
+      { header: 'description', key: 'description', width: 20 },
+    ];
+
+    characters.forEach((character) => {
+      worksheet.addRow({
+        id: character.id,
+        name: character.name,
+        ki: character.ki,
+        maxKi: character.max_ki,
+        race: character.race,
+        gender: character.gender,
+        description: character.description,
+        image: character.image,
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return buffer;
   }
 }
 

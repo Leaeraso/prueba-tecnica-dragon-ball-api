@@ -55,7 +55,6 @@ paths:
         - $ref: "#/parameters/sort_dir"
         - $ref: "#/parameters/ki_min"
         - $ref: "#/parameters/ki_max"
-        - $ref: "#/parameters/max_ki"
       responses:
         200:
           description: Character's array
@@ -148,6 +147,22 @@ paths:
           description: Internal server error
       security:
         - bearerAuth: []
+  /export-excel:
+    get:
+      tags:
+        - Characters
+      summary: Export characters to excel
+      parameters:
+        - $ref: "#/parameters/search"
+        - $ref: "#/parameters/sort"
+        - $ref: "#/parameters/sort_dir"
+        - $ref: "#/parameters/ki_min"
+        - $ref: "#/parameters/ki_max"
+      responses:
+        200:
+          description: Download an excel file
+        500:
+          description: Internal server error
 components:
   schemas:
     TestResponse:
@@ -288,9 +303,3 @@ parameters:
     description: Ki Max's character
     schema:
       type: number
-  max_ki:
-    name: max_ki
-    in: query
-    description: Max ki reached by a character
-    schema:
-      type: string

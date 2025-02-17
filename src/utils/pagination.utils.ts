@@ -11,6 +11,10 @@ export const pagination = (queryParams: generalSearchDto) => {
     sortOptions['ki'] = SortEnum.ASC;
   }
 
+  if (Object.keys(sortOptions).length === 0) {
+    sortOptions['id'] = SortEnum.ASC;
+  }
+
   const options = {
     page: queryParams.page || 1,
     limit: queryParams.page_size || 10,

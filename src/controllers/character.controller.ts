@@ -67,6 +67,26 @@ class CharacterController {
       })
       .catch((err) => next(err));
   }
+
+  handleExportCharactersToExcel(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    CharacterService.exportCharactersToExcel(req.query as any)
+      .then((result) => {
+        res.setHeader(
+          'Content-Type',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
+        res.setHeader(
+          'Content-Disposition',
+          'attachment; filename=personajes.xlsx'
+        );
+        res.send(result);
+      })
+      .catch((err) => next(err));
+  }
 }
 
 export default new CharacterController();

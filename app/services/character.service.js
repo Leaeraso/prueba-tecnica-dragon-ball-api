@@ -20,6 +20,7 @@ const errors_1 = require("../config/errors");
 const messages_enum_1 = require("../config/errors/messages.enum");
 const suffixes_enum_1 = require("../data/enums/suffixes.enum");
 const validate_helper_1 = __importDefault(require("../helpers/validate.helper"));
+const exceljs_1 = __importDefault(require("exceljs"));
 const parseKi = (ki) => {
     const normalizedKi = ki.toLowerCase().replace(/[,.]/g, '');
     if (!isNaN(Number(normalizedKi))) {
@@ -138,6 +139,48 @@ class CharacterService {
             if (!deletedCharacter)
                 throw new errors_1.NotFoundError(messages_enum_1.ErrorMessage.CharacterNotFound);
             return { message: 'Character deleted successfully' };
+        });
+    }
+    exportCharactersToExcel(queryParams) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { options } = (0, pagination_utils_1.pagination)(queryParams);
+            const query = Object.assign(Object.assign(Object.assign({}, (queryParams.search && {
+                $or: [
+                    { name: { $regex: queryParams.search, $options: 'i' } },
+                    { description: { $regex: queryParams.search, $options: 'i' } },
+                ],
+            })), (queryParams.race && { race: queryParams.race })), (queryParams.gender && { gender: queryParams.gender }));
+            if (queryParams.ki_min || queryParams.ki_max) {
+                query.ki = Object.assign({}, queryParams.ki_min && { $gte: queryParams.ki_min }, queryParams.ki_max && { $lte: queryParams.ki_max });
+            }
+            const characters = yield character_schema_1.default.find(query)
+                .sort(options.sort)
+                .select('id name ki max_ki race gender description');
+            const workbook = new exceljs_1.default.Workbook();
+            const worksheet = workbook.addWorksheet('Characters');
+            worksheet.columns = [
+                { header: 'id', key: 'id', width: 10 },
+                { header: 'name', key: 'name', width: 20 },
+                { header: 'ki', key: 'ki', width: 20 },
+                { header: 'maxKi', key: 'maxKi', width: 20 },
+                { header: 'race', key: 'race', width: 20 },
+                { header: 'gender', key: 'gender', width: 20 },
+                { header: 'description', key: 'description', width: 20 },
+            ];
+            characters.forEach((character) => {
+                worksheet.addRow({
+                    id: character.id,
+                    name: character.name,
+                    ki: character.ki,
+                    maxKi: character.max_ki,
+                    race: character.race,
+                    gender: character.gender,
+                    description: character.description,
+                    image: character.image,
+                });
+            });
+            const buffer = yield workbook.xlsx.writeBuffer();
+            return buffer;
         });
     }
 }
