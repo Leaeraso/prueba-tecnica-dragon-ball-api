@@ -15,4 +15,6 @@ exports.default = {
     FETCH_URI: process.env.FETCH_URI,
     NODE_ENV: process.env.NODE_ENV,
     SECRET_KEY: process.env.SECRET_KEY,
+    EMAIL: process.env.EMAIL,
+    PASSWORD: process.env.PASSWORD,
 };

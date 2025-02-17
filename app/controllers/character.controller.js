@@ -46,11 +46,14 @@ class CharacterController {
             .catch((err) => next(err));
     }
     handleExportCharactersToExcel(req, res, next) {
-        character_service_1.default.exportCharactersToExcel(req.query)
+        character_service_1.default.exportCharactersToExcel(req.query, req.body.email)
             .then((result) => {
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', 'attachment; filename=personajes.xlsx');
-            res.send(result);
+            res.send({
+                message: `Excel file was sent to ${req.body.email}, but you can download it from here.`,
+                result,
+            });
         })
             .catch((err) => next(err));
     }

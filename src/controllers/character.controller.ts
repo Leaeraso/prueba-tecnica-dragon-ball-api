@@ -73,7 +73,7 @@ class CharacterController {
     res: Response,
     next: NextFunction
   ) {
-    CharacterService.exportCharactersToExcel(req.query as any)
+    CharacterService.exportCharactersToExcel(req.query as any, req.body.email)
       .then((result) => {
         res.setHeader(
           'Content-Type',
@@ -83,7 +83,10 @@ class CharacterController {
           'Content-Disposition',
           'attachment; filename=personajes.xlsx'
         );
-        res.send(result);
+        res.send({
+          message: `Excel file was sent to ${req.body.email}, but you can download it from here.`,
+          result,
+        });
       })
       .catch((err) => next(err));
   }

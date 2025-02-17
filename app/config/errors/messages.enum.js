@@ -6,4 +6,5 @@ var ErrorMessage;
     ErrorMessage["CharacterNotFound"] = "Character not found";
     ErrorMessage["CharacterAlreadyExists"] = "Character already exists";
     ErrorMessage["InvalidToken"] = "Invalid token";
+    ErrorMessage["ErrorSendingEmail"] = "Error sending email";
 })(ErrorMessage || (exports.ErrorMessage = ErrorMessage = {}));

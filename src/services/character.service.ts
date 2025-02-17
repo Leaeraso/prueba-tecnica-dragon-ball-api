@@ -12,6 +12,7 @@ import { ErrorMessage } from '../config/errors/messages.enum';
 import { SuffixesEnum } from '../data/enums/suffixes.enum';
 import validateData from '../helpers/validate.helper';
 import exceljs from 'exceljs';
+import sendExcelByEmail from '../utils/nodemailer.utils';
 
 interface ApiResponse {
   items: any[];
@@ -179,7 +180,7 @@ class CharacterService {
     return { message: 'Character deleted successfully' };
   }
 
-  async exportCharactersToExcel(queryParams: generalSearchDto) {
+  async exportCharactersToExcel(queryParams: generalSearchDto, email: string) {
     const { options } = pagination(queryParams);
 
     const query: Record<string, any> = {
@@ -232,6 +233,10 @@ class CharacterService {
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
+
+    console.log('email:', email);
+
+    await sendExcelByEmail(email, buffer as Buffer);
     return buffer;
   }
 }

@@ -21,6 +21,7 @@ const messages_enum_1 = require("../config/errors/messages.enum");
 const suffixes_enum_1 = require("../data/enums/suffixes.enum");
 const validate_helper_1 = __importDefault(require("../helpers/validate.helper"));
 const exceljs_1 = __importDefault(require("exceljs"));
+const nodemailer_utils_1 = __importDefault(require("../utils/nodemailer.utils"));
 const parseKi = (ki) => {
     const normalizedKi = ki.toLowerCase().replace(/[,.]/g, '');
     if (!isNaN(Number(normalizedKi))) {
@@ -141,7 +142,7 @@ class CharacterService {
             return { message: 'Character deleted successfully' };
         });
     }
-    exportCharactersToExcel(queryParams) {
+    exportCharactersToExcel(queryParams, email) {
         return __awaiter(this, void 0, void 0, function* () {
             const { options } = (0, pagination_utils_1.pagination)(queryParams);
             const query = Object.assign(Object.assign(Object.assign({}, (queryParams.search && {
@@ -180,6 +181,8 @@ class CharacterService {
                 });
             });
             const buffer = yield workbook.xlsx.writeBuffer();
+            console.log('email:', email);
+            yield (0, nodemailer_utils_1.default)(email, buffer);
             return buffer;
         });
     }
