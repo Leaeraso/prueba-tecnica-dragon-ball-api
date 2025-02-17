@@ -169,6 +169,8 @@ paths:
           description: A message and an excel file
         500:
           description: Internal server error
+      security:
+        - bearerAuth: []
 components:
   schemas:
     TestResponse:

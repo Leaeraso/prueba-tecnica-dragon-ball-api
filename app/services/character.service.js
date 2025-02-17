@@ -22,6 +22,7 @@ const suffixes_enum_1 = require("../data/enums/suffixes.enum");
 const validate_helper_1 = __importDefault(require("../helpers/validate.helper"));
 const exceljs_1 = __importDefault(require("exceljs"));
 const nodemailer_utils_1 = __importDefault(require("../utils/nodemailer.utils"));
+const redis_config_1 = __importDefault(require("../config/redis.config"));
 const parseKi = (ki) => {
     const normalizedKi = ki.toLowerCase().replace(/[,.]/g, '');
     if (!isNaN(Number(normalizedKi))) {
@@ -37,6 +38,7 @@ const parseKi = (ki) => {
     }
     return null;
 };
+const client = redis_config_1.default.getClient();
 class CharacterService {
     getAndSaveCharacters() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -91,7 +93,11 @@ class CharacterService {
             if (queryParams.ki_min || queryParams.ki_max) {
                 query.ki = Object.assign({}, queryParams.ki_min && { $gte: queryParams.ki_min }, queryParams.ki_max && { $lte: queryParams.ki_max });
             }
+            const reply = yield client.get('characters');
+            if (reply)
+                return JSON.parse(reply);
             const characters = yield character_schema_1.default.paginate(query, options);
+            yield client.set('characters', JSON.stringify(characters));
             return {
                 data: characters.docs,
                 paginate: {

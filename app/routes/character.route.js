@@ -15,7 +15,7 @@ class CharacterRoute {
         this.router.get('/fetch-characters-data', validate_token_middleware_1.default, character_controller_1.default.handleFetchCharacters.bind(this));
         this.router.get('/characters', character_controller_1.default.handleGetCharacters.bind(this));
         this.router.get('/characters/:id', character_controller_1.default.handleGetCharacterById.bind(this));
-        this.router.post('/export-excel', character_controller_1.default.handleExportCharactersToExcel.bind(this));
+        this.router.post('/export-excel', validate_token_middleware_1.default, character_controller_1.default.handleExportCharactersToExcel.bind(this));
         this.router.post('/characters', validate_token_middleware_1.default, character_controller_1.default.handleCreateCharacter.bind(this));
         this.router.put('/characters/:id', validate_token_middleware_1.default, character_controller_1.default.handleUpdateCharacter.bind(this));
         this.router.delete('/characters/:id', validate_token_middleware_1.default, character_controller_1.default.handleDeleteCharacter.bind(this));

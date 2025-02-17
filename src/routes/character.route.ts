@@ -26,6 +26,7 @@ class CharacterRoute {
     );
     this.router.post(
       '/export-excel',
+      validateToken,
       CharacterController.handleExportCharactersToExcel.bind(this)
     );
     this.router.post(

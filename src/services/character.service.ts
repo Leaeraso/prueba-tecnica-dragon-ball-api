@@ -13,6 +13,7 @@ import { SuffixesEnum } from '../data/enums/suffixes.enum';
 import validateData from '../helpers/validate.helper';
 import exceljs from 'exceljs';
 import sendExcelByEmail from '../utils/nodemailer.utils';
+import RedisConnection from '../config/redis.config';
 
 interface ApiResponse {
   items: any[];
@@ -41,6 +42,8 @@ const parseKi = (ki: string): number | null => {
 
   return null;
 };
+
+const client = RedisConnection.getClient();
 
 class CharacterService {
   async getAndSaveCharacters() {
@@ -117,7 +120,12 @@ class CharacterService {
       );
     }
 
+    const reply = await client.get('characters');
+    if (reply) return JSON.parse(reply);
+
     const characters = await CharacterModel.paginate(query, options);
+
+    await client.set('characters', JSON.stringify(characters));
 
     return {
       data: characters.docs,

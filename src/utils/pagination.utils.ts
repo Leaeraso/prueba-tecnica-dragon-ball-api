@@ -6,7 +6,9 @@ export const pagination = (queryParams: generalSearchDto) => {
 
   if (queryParams.sort) {
     sortOptions[queryParams.sort] =
-      queryParams.sort_dir === 'ASC' ? SortEnum.ASC : SortEnum.DESC;
+      queryParams.sort_dir?.toUpperCase() === 'ASC'
+        ? SortEnum.ASC
+        : SortEnum.DESC;
   } else if (queryParams.ki_min || queryParams.ki_max) {
     sortOptions['ki'] = SortEnum.ASC;
   }
