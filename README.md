@@ -39,7 +39,7 @@ Algunos de los puntos que se trabajaron:
 #### 1. Clonar el repositorio
 
 ```
-git clone https://github.com/Leaeraso/enpatados
+git clone https://github.com/Leaeraso/prueba-tecnica-dragon-ball-api
 
 ```
 
