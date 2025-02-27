@@ -59,23 +59,21 @@ class CharacterService {
         totalPages = response.data.meta.totalPages;
       }
 
-      const pageCharacters = response.data.items.map(
-        (character: characterDto) => ({
-          id: character.id,
-          name: character.name,
-          ki: character.ki,
-          maxKi: character.maxKi,
-          race: character.race,
-          gender: character.gender,
-          description: character.description,
-          image: character.image,
-        })
-      );
+      const pageCharacters = response.data.items.map((character) => ({
+        character_number: character.id,
+        name: character.name,
+        ki: character.ki,
+        maxKi: character.maxKi,
+        race: character.race,
+        gender: character.gender,
+        description: character.description,
+        image: character.image,
+      }));
 
       characters = [...characters, ...pageCharacters];
 
       normalizedCharacters = characters.map((character) => ({
-        id: character.id,
+        character_number: character.character_number,
         name: character.name,
         ki: parseKi(character.ki),
         maxKi: parseKi(character.maxKi),
@@ -87,7 +85,13 @@ class CharacterService {
       page++;
     }
 
-    await CharacterModel.insertMany(normalizedCharacters);
+    for (const character of normalizedCharacters) {
+      await CharacterModel.updateOne(
+        { character_number: character.character_number },
+        { $set: character },
+        { upsert: true }
+      );
+    }
 
     return { message: 'Data obtained and saved successfully' };
   }
@@ -126,8 +130,8 @@ class CharacterService {
     };
   }
 
-  async getCharacterById(id: string) {
-    const affiliate = await CharacterModel.findOne({ id: id });
+  async getCharacterById(id: characterDto['object_id']) {
+    const affiliate = await CharacterModel.findById(id);
 
     if (!affiliate) throw new NotFoundError(ErrorMessage.CharacterNotFound);
 
@@ -146,14 +150,19 @@ class CharacterService {
       .sort({ id: -1 })
       .limit(1);
 
-    character.id = lastCharacter ? lastCharacter.id + 1 : 1;
+    character.character_number = lastCharacter
+      ? lastCharacter.character_number + 1
+      : 1;
 
     return await CharacterModel.create(character);
   }
 
-  async updateCharacter(id: string, character: Partial<characterDto>) {
+  async updateCharacter(
+    id: characterDto['object_id'],
+    character: Partial<characterDto>
+  ) {
     const updatedCharacter = await CharacterModel.findOneAndUpdate(
-      { id: id },
+      { _id: id },
       character,
       { new: true }
     );
@@ -164,8 +173,8 @@ class CharacterService {
     return updatedCharacter;
   }
 
-  async deleteCharacter(id: string) {
-    const deletedCharacter = await CharacterModel.findOneAndDelete({ id: id });
+  async deleteCharacter(id: characterDto['object_id']) {
+    const deletedCharacter = await CharacterModel.findOneAndDelete({ _id: id });
 
     if (!deletedCharacter)
       throw new NotFoundError(ErrorMessage.CharacterNotFound);
