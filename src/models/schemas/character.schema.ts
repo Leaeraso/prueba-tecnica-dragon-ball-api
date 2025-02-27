@@ -4,8 +4,8 @@ import mongoosePaginate from 'mongoose-paginate-v2';
 
 const CharacterSchema = new mongoose.Schema<Character>(
   {
-    id: Number,
-    name: { type: String, unique: true },
+    character_number: { type: Number, alias: 'id' },
+    name: String,
     ki: Number,
     max_ki: { type: Number, alias: 'maxKi' },
     race: String,

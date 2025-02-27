@@ -1,7 +1,7 @@
 import { Document, PaginateModel } from 'mongoose';
 
 export interface Character extends Document {
-  id: number;
+  character_number: number;
   name: string;
   ki: number;
   max_ki: number;

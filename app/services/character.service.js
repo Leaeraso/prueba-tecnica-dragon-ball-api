@@ -55,7 +55,7 @@ class CharacterService {
                     totalPages = response.data.meta.totalPages;
                 }
                 const pageCharacters = response.data.items.map((character) => ({
-                    id: character.id,
+                    character_number: character.id,
                     name: character.name,
                     ki: character.ki,
                     maxKi: character.maxKi,
@@ -66,7 +66,7 @@ class CharacterService {
                 }));
                 characters = [...characters, ...pageCharacters];
                 normalizedCharacters = characters.map((character) => ({
-                    id: character.id,
+                    character_number: character.character_number,
                     name: character.name,
                     ki: parseKi(character.ki),
                     maxKi: parseKi(character.maxKi),
@@ -77,7 +77,9 @@ class CharacterService {
                 }));
                 page++;
             }
-            yield character_schema_1.default.insertMany(normalizedCharacters);
+            for (const character of normalizedCharacters) {
+                yield character_schema_1.default.updateOne({ character_number: character.character_number }, { $set: character }, { upsert: true });
+            }
             return { message: 'Data obtained and saved successfully' };
         });
     }
@@ -110,7 +112,7 @@ class CharacterService {
     }
     getCharacterById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const affiliate = yield character_schema_1.default.findOne({ id: id });
+            const affiliate = yield character_schema_1.default.findById(id);
             if (!affiliate)
                 throw new errors_1.NotFoundError(messages_enum_1.ErrorMessage.CharacterNotFound);
             return affiliate;
@@ -127,14 +129,20 @@ class CharacterService {
             const lastCharacter = yield character_schema_1.default.findOne()
                 .sort({ id: -1 })
                 .limit(1);
-            character.id = lastCharacter ? lastCharacter.id + 1 : 1;
+            character.character_number = lastCharacter
+                ? lastCharacter.character_number + 1
+                : 1;
             return yield character_schema_1.default.create(character);
         });
     }
     updateCharacter(id, character) {
         return __awaiter(this, void 0, void 0, function* () {
+<<<<<<< HEAD
             yield (0, validate_helper_1.default)(character, character_schema_1.default);
             const updatedCharacter = yield character_schema_1.default.findOneAndUpdate({ id: id }, character, { new: true });
+=======
+            const updatedCharacter = yield character_schema_1.default.findOneAndUpdate({ _id: id }, character, { new: true });
+>>>>>>> feat/character-crud
             if (!updatedCharacter)
                 throw new errors_1.NotFoundError(messages_enum_1.ErrorMessage.CharacterNotFound);
             return updatedCharacter;
@@ -142,7 +150,7 @@ class CharacterService {
     }
     deleteCharacter(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const deletedCharacter = yield character_schema_1.default.findOneAndDelete({ id: id });
+            const deletedCharacter = yield character_schema_1.default.findOneAndDelete({ _id: id });
             if (!deletedCharacter)
                 throw new errors_1.NotFoundError(messages_enum_1.ErrorMessage.CharacterNotFound);
             return { message: 'Character deleted successfully' };

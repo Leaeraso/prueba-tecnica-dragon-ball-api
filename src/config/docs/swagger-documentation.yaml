@@ -223,6 +223,8 @@ components:
       type: object
       properties:
         id:
+          type: string
+        charatcer_id:
           type: number
         name:
           type: string

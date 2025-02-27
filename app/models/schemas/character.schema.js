@@ -39,8 +39,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
 const mongoose_paginate_v2_1 = __importDefault(require("mongoose-paginate-v2"));
 const CharacterSchema = new mongoose_1.default.Schema({
+<<<<<<< HEAD
     id: Number,
     name: { type: String, unique: true },
+=======
+    character_number: { type: Number, alias: 'id' },
+    name: String,
+>>>>>>> feat/character-crud
     ki: Number,
     max_ki: { type: Number, alias: 'maxKi' },
     race: String,

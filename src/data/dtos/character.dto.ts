@@ -2,7 +2,8 @@ import { GenderEnum } from '../enums/gender.enum';
 import { RaceEnum } from '../enums/race.enum';
 
 export interface characterDto {
-  id: number;
+  object_id?: string;
+  character_number: number;
   name: string;
   ki: string;
   maxKi: string;
@@ -13,7 +14,8 @@ export interface characterDto {
 }
 
 export interface normalizedCharacterDto {
-  id: number;
+  object_id?: string;
+  character_number: number;
   name: string;
   ki: number | null;
   maxKi: number | null;
