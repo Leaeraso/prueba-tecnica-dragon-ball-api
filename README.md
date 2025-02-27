@@ -98,7 +98,7 @@ npm run start:dev
 Para utilizar la documentación de la API y probar los endpoints, iniciar el servidor y entrar al siguiente endpoint:
 
 ```
-http://localhost:3000/documentation/
+http://localhost:3000/api-docs/
 
 ```
 
