@@ -17,7 +17,6 @@ const pagination = (queryParams) => {
     if (Object.keys(sortOptions).length === 0) {
         sortOptions['id'] = sort_enum_1.SortEnum.ASC;
     }
-    console.log('sortOptions', sortOptions);
     const options = {
         page: queryParams.page || 1,
         limit: queryParams.page_size || 10,

@@ -137,12 +137,7 @@ class CharacterService {
     }
     updateCharacter(id, character) {
         return __awaiter(this, void 0, void 0, function* () {
-<<<<<<< HEAD
-            yield (0, validate_helper_1.default)(character, character_schema_1.default);
-            const updatedCharacter = yield character_schema_1.default.findOneAndUpdate({ id: id }, character, { new: true });
-=======
             const updatedCharacter = yield character_schema_1.default.findOneAndUpdate({ _id: id }, character, { new: true });
->>>>>>> feat/character-crud
             if (!updatedCharacter)
                 throw new errors_1.NotFoundError(messages_enum_1.ErrorMessage.CharacterNotFound);
             return updatedCharacter;
