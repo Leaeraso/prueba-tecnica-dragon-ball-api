@@ -1,7 +1,7 @@
 import { GenderEnum } from '../enums/gender.enum';
 import { RaceEnum } from '../enums/race.enum';
 
-export interface generalSearchDto {
+export interface GeneralSearchDto {
   search: string;
   race: RaceEnum;
   gender: GenderEnum;

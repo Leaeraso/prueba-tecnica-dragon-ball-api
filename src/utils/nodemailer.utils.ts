@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import config from '../config/index';
 import { InternalServerError } from '../config/errors';
-import { ErrorMessage } from '../config/errors/messages.enum';
+import { ErrorMessage } from '../config/errors/error-messages';
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',

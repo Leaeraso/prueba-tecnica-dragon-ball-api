@@ -1,31 +1,38 @@
-export class NotFoundError extends Error {
+import { errorMessages, ErrorMessagesKeys } from './error-messages';
+
+export class BaseError extends Error {
   public statusCode: number;
-  constructor(message: string) {
+  public error: string;
+
+  constructor(key: ErrorMessagesKeys) {
+    const { error, message, statusCode } = errorMessages[key];
     super(message);
-    this.statusCode = 404;
+    this.error = error;
+    this.message = message;
+    this.statusCode = statusCode;
   }
 }
 
-export class BadRequestError extends Error {
-  public statusCode: number;
-  constructor(message: string) {
-    super(message);
-    this.statusCode = 400;
+export class NotFoundError extends BaseError {
+  constructor(key: ErrorMessagesKeys) {
+    super(key);
   }
 }
 
-export class InternalServerError extends Error {
-  public statusCode: number;
-  constructor(message: string) {
-    super(message);
-    this.statusCode = 500;
+export class BadRequestError extends BaseError {
+  constructor(key: ErrorMessagesKeys) {
+    super(key);
   }
 }
 
-export class UnauthorizedError extends Error {
-  public statusCode: number;
-  constructor(message: string) {
-    super(message);
-    this.statusCode = 401;
+export class UnauthorizedError extends BaseError {
+  constructor(key: ErrorMessagesKeys) {
+    super(key);
+  }
+}
+
+export class InternalServerError extends BaseError {
+  constructor(key: ErrorMessagesKeys) {
+    super(key);
   }
 }

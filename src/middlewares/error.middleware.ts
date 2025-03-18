@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { BaseError } from '../config/errors';
 
 const errorMiddleware = (
   err: any,
@@ -8,10 +9,21 @@ const errorMiddleware = (
 ) => {
   console.error('Error:', err);
 
-  const statusCode = err.statusCode || 500;
-  const message = err.message || 'Internal server error';
+  if (err instanceof BaseError) {
+    return res
+      .status(err.statusCode)
+      .json({
+        error: err.error,
+        message: err.message,
+        statusCode: err.statusCode,
+      });
+  }
 
-  res.status(statusCode).json({ error: true, message: message });
+  return res.status(500).json({
+    error: 'Internal server error',
+    statusCode: 500,
+    message: err.message,
+  });
 };
 
 export default errorMiddleware;

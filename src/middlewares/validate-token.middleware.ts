@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import config from '../config/index';
 import { UnauthorizedError } from '../config/errors';
-import { ErrorMessage } from '../config/errors/messages.enum';
+import { ErrorMessage } from '../config/errors/error-messages';
 
 interface authRequest extends Request {
   user?: any;

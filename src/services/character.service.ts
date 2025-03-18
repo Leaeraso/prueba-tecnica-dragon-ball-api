@@ -1,19 +1,19 @@
 import config from '../config/index';
 import axios from 'axios';
 import {
-  characterDto,
-  normalizedCharacterDto,
+  CharacterDto,
+  NormalizedCharacterDto,
 } from '../data/dtos/character.dto';
 import CharacterModel from '../models/schemas/character.schema';
-import { generalSearchDto } from '../data/dtos/general-search.dto';
+import { GeneralSearchDto } from '../data/dtos/general-search.dto';
 import { pagination } from '../utils/pagination.utils';
 import { BadRequestError, NotFoundError } from '../config/errors';
-import { ErrorMessage } from '../config/errors/messages.enum';
-import { SuffixesEnum } from '../data/enums/suffixes.enum';
 import validateData from '../helpers/validate.helper';
 import exceljs from 'exceljs';
 import sendExcelByEmail from '../utils/nodemailer.utils';
 import RedisConnection from '../config/redis.config';
+import { ErrorMessagesKeys } from '../config/errors/error-messages';
+import parseKi from '../utils/parseKi.utils';
 
 interface ApiResponse {
   items: any[];
@@ -23,33 +23,13 @@ interface ApiResponse {
   };
 }
 
-const parseKi = (ki: string): number | null => {
-  const normalizedKi = ki.toLowerCase().replace(/[,.]/g, '');
-
-  if (!isNaN(Number(normalizedKi))) {
-    return Number(normalizedKi);
-  }
-
-  const match = normalizedKi.match(/^([\d\.]+)\s*([a-zA-Z]+)$/);
-  if (match) {
-    const numberPart = parseFloat(match[1]);
-    const suffix = match[2] as keyof typeof SuffixesEnum;
-
-    if (SuffixesEnum[suffix]) {
-      return numberPart * SuffixesEnum[suffix];
-    }
-  }
-
-  return null;
-};
-
 const client = RedisConnection.getClient();
 
 class CharacterService {
   async getAndSaveCharacters() {
     let page = 1;
-    let characters: characterDto[] = [];
-    let normalizedCharacters: normalizedCharacterDto[] = [];
+    let characters: CharacterDto[] = [];
+    let normalizedCharacters: NormalizedCharacterDto[] = [];
     let totalPages = 1;
 
     while (page <= totalPages) {
@@ -58,7 +38,7 @@ class CharacterService {
       );
 
       if (!response.data || !response.data.meta) {
-        throw new Error('Invalid API response');
+        throw new BadRequestError(ErrorMessagesKeys.INVALID_API_RESPONSE);
       }
 
       if (page === 1) {
@@ -102,7 +82,7 @@ class CharacterService {
     return { message: 'Data obtained and saved successfully' };
   }
 
-  async getCharacters(queryParams: generalSearchDto) {
+  async getCharacters(queryParams: GeneralSearchDto) {
     const { options } = pagination(queryParams);
 
     const query: Record<string, any> = {
@@ -141,15 +121,16 @@ class CharacterService {
     };
   }
 
-  async getCharacterById(id: characterDto['object_id']) {
-    const affiliate = await CharacterModel.findById(id);
+  async getCharacterById(id: CharacterDto['object_id']) {
+    const character = await CharacterModel.findById(id);
 
-    if (!affiliate) throw new NotFoundError(ErrorMessage.CharacterNotFound);
+    if (!character)
+      throw new NotFoundError(ErrorMessagesKeys.CHARACTER_NOT_FOUND);
 
-    return affiliate;
+    return character;
   }
 
-  async createCharacter(character: characterDto) {
+  async createCharacter(character: CharacterDto) {
     await validateData(character, CharacterModel);
 
     const existingCharacter = await CharacterModel.findOne({
@@ -157,7 +138,7 @@ class CharacterService {
     });
 
     if (existingCharacter)
-      throw new BadRequestError(ErrorMessage.CharacterAlreadyExists);
+      throw new BadRequestError(ErrorMessagesKeys.CHARACTER_ALREADY_EXISTS);
 
     const lastCharacter = await CharacterModel.findOne()
       .sort({ id: -1 })
@@ -171,8 +152,8 @@ class CharacterService {
   }
 
   async updateCharacter(
-    id: characterDto['object_id'],
-    character: Partial<characterDto>
+    id: CharacterDto['object_id'],
+    character: Partial<CharacterDto>
   ) {
     const updatedCharacter = await CharacterModel.findOneAndUpdate(
       { _id: id },
@@ -181,21 +162,21 @@ class CharacterService {
     );
 
     if (!updatedCharacter)
-      throw new NotFoundError(ErrorMessage.CharacterNotFound);
+      throw new NotFoundError(ErrorMessagesKeys.CHARACTER_NOT_FOUND);
 
     return updatedCharacter;
   }
 
-  async deleteCharacter(id: characterDto['object_id']) {
+  async deleteCharacter(id: CharacterDto['object_id']) {
     const deletedCharacter = await CharacterModel.findOneAndDelete({ _id: id });
 
     if (!deletedCharacter)
-      throw new NotFoundError(ErrorMessage.CharacterNotFound);
+      throw new NotFoundError(ErrorMessagesKeys.CHARACTER_NOT_FOUND);
 
     return { message: 'Character deleted successfully' };
   }
 
-  async exportCharactersToExcel(queryParams: generalSearchDto, email: string) {
+  async exportCharactersToExcel(queryParams: GeneralSearchDto, email: string) {
     const { options } = pagination(queryParams);
 
     const query: Record<string, any> = {

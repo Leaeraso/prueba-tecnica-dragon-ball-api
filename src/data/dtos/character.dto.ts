@@ -1,7 +1,7 @@
 import { GenderEnum } from '../enums/gender.enum';
 import { RaceEnum } from '../enums/race.enum';
 
-export interface characterDto {
+export interface CharacterDto {
   object_id?: string;
   character_number: number;
   name: string;
@@ -13,7 +13,7 @@ export interface characterDto {
   image: string;
 }
 
-export interface normalizedCharacterDto {
+export interface NormalizedCharacterDto {
   object_id?: string;
   character_number: number;
   name: string;
