@@ -1,13 +1,14 @@
 import config from '../config/index';
 import axios from 'axios';
-import {
-  CharacterDto,
-  NormalizedCharacterDto,
-} from '../data/dtos/character.dto';
+import { CharacterDto } from '../data/dtos/character.dto';
 import CharacterModel from '../models/schemas/character.schema';
 import { GeneralSearchDto } from '../data/dtos/general-search.dto';
 import { pagination } from '../utils/pagination.utils';
-import { BadRequestError, NotFoundError } from '../config/errors';
+import {
+  BadRequestError,
+  InternalServerError,
+  NotFoundError,
+} from '../config/errors';
 import validateData from '../helpers/validate.helper';
 import exceljs from 'exceljs';
 import sendExcelByEmail from '../utils/nodemailer.utils';
@@ -26,10 +27,9 @@ interface ApiResponse {
 // const client = RedisConnection.getClient();
 
 class CharacterService {
-  async getAndSaveCharacters() {
+  async fetchCharacters() {
     let page = 1;
     let characters: CharacterDto[] = [];
-    let normalizedCharacters: NormalizedCharacterDto[] = [];
     let totalPages = 1;
 
     while (page <= totalPages) {
@@ -48,19 +48,6 @@ class CharacterService {
       const pageCharacters = response.data.items.map((character) => ({
         character_number: character.id,
         name: character.name,
-        ki: character.ki,
-        maxKi: character.maxKi,
-        race: character.race,
-        gender: character.gender,
-        description: character.description,
-        image: character.image,
-      }));
-
-      characters = [...characters, ...pageCharacters];
-
-      normalizedCharacters = characters.map((character) => ({
-        character_number: character.character_number,
-        name: character.name,
         ki: parseKi(character.ki),
         maxKi: parseKi(character.maxKi),
         race: character.race,
@@ -68,19 +55,40 @@ class CharacterService {
         description: character.description,
         image: character.image,
       }));
+
+      characters.push(...pageCharacters);
+
       page++;
     }
-
-    for (const character of normalizedCharacters) {
-      await CharacterModel.updateOne(
-        { character_number: character.character_number },
-        { $set: character },
-        { upsert: true }
-      );
-    }
-
-    return { message: 'Data obtained and saved successfully' };
+    return characters;
   }
+
+  async saveCharactersInBatches(characters: CharacterDto[]) {
+    const batchSize = 10;
+
+    for (let i = 0; i < characters.length; i += batchSize) {
+      const batch = characters.slice(i, i + batchSize);
+
+      try {
+        Promise.allSettled(
+          batch.map((character) => {
+            CharacterModel.updateOne(
+              { character_number: character.character_number },
+              { $set: character },
+              { upsert: true }
+            );
+          })
+        );
+      } catch (error) {
+        console.error(`Error saving characters:`, error);
+        throw new InternalServerError(
+          ErrorMessagesKeys.ERROR_SAVING_CHARACTERS
+        );
+      }
+    }
+  }
+
+  async getAndSaveCharacters() {}
 
   async getCharacters(queryParams: GeneralSearchDto) {
     const { options } = pagination(queryParams);
