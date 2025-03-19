@@ -17,28 +17,13 @@ const axios_1 = __importDefault(require("axios"));
 const character_schema_1 = __importDefault(require("../models/schemas/character.schema"));
 const pagination_utils_1 = require("../utils/pagination.utils");
 const errors_1 = require("../config/errors");
-const messages_enum_1 = require("../config/errors/messages.enum");
-const suffixes_enum_1 = require("../data/enums/suffixes.enum");
 const validate_helper_1 = __importDefault(require("../helpers/validate.helper"));
 const exceljs_1 = __importDefault(require("exceljs"));
 const nodemailer_utils_1 = __importDefault(require("../utils/nodemailer.utils"));
-const redis_config_1 = __importDefault(require("../config/redis.config"));
-const parseKi = (ki) => {
-    const normalizedKi = ki.toLowerCase().replace(/[,.]/g, '');
-    if (!isNaN(Number(normalizedKi))) {
-        return Number(normalizedKi);
-    }
-    const match = normalizedKi.match(/^([\d\.]+)\s*([a-zA-Z]+)$/);
-    if (match) {
-        const numberPart = parseFloat(match[1]);
-        const suffix = match[2];
-        if (suffixes_enum_1.SuffixesEnum[suffix]) {
-            return numberPart * suffixes_enum_1.SuffixesEnum[suffix];
-        }
-    }
-    return null;
-};
-const client = redis_config_1.default.getClient();
+// import RedisConnection from '../config/redis.config';
+const error_messages_1 = require("../config/errors/error-messages");
+const parseKi_utils_1 = __importDefault(require("../utils/parseKi.utils"));
+// const client = RedisConnection.getClient();
 class CharacterService {
     getAndSaveCharacters() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -49,7 +34,7 @@ class CharacterService {
             while (page <= totalPages) {
                 const response = yield axios_1.default.get(`${index_1.default.FETCH_URI}?page=${page}`);
                 if (!response.data || !response.data.meta) {
-                    throw new Error('Invalid API response');
+                    throw new errors_1.BadRequestError(error_messages_1.ErrorMessagesKeys.INVALID_API_RESPONSE);
                 }
                 if (page === 1) {
                     totalPages = response.data.meta.totalPages;
@@ -68,8 +53,8 @@ class CharacterService {
                 normalizedCharacters = characters.map((character) => ({
                     character_number: character.character_number,
                     name: character.name,
-                    ki: parseKi(character.ki),
-                    maxKi: parseKi(character.maxKi),
+                    ki: (0, parseKi_utils_1.default)(character.ki),
+                    maxKi: (0, parseKi_utils_1.default)(character.maxKi),
                     race: character.race,
                     gender: character.gender,
                     description: character.description,
@@ -95,11 +80,10 @@ class CharacterService {
             if (queryParams.ki_min || queryParams.ki_max) {
                 query.ki = Object.assign({}, queryParams.ki_min && { $gte: queryParams.ki_min }, queryParams.ki_max && { $lte: queryParams.ki_max });
             }
-            const reply = yield client.get('characters');
-            if (reply)
-                return JSON.parse(reply);
+            // const reply = await client.get('characters');
+            // if (reply) return JSON.parse(reply);
             const characters = yield character_schema_1.default.paginate(query, options);
-            yield client.set('characters', JSON.stringify(characters));
+            // await client.set('characters', JSON.stringify(characters));
             return {
                 data: characters.docs,
                 paginate: {
@@ -112,10 +96,10 @@ class CharacterService {
     }
     getCharacterById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const affiliate = yield character_schema_1.default.findById(id);
-            if (!affiliate)
-                throw new errors_1.NotFoundError(messages_enum_1.ErrorMessage.CharacterNotFound);
-            return affiliate;
+            const character = yield character_schema_1.default.findById(id);
+            if (!character)
+                throw new errors_1.NotFoundError(error_messages_1.ErrorMessagesKeys.CHARACTER_NOT_FOUND);
+            return character;
         });
     }
     createCharacter(character) {
@@ -125,7 +109,7 @@ class CharacterService {
                 name: character.name,
             });
             if (existingCharacter)
-                throw new errors_1.BadRequestError(messages_enum_1.ErrorMessage.CharacterAlreadyExists);
+                throw new errors_1.BadRequestError(error_messages_1.ErrorMessagesKeys.CHARACTER_ALREADY_EXISTS);
             const lastCharacter = yield character_schema_1.default.findOne()
                 .sort({ id: -1 })
                 .limit(1);
@@ -139,7 +123,7 @@ class CharacterService {
         return __awaiter(this, void 0, void 0, function* () {
             const updatedCharacter = yield character_schema_1.default.findOneAndUpdate({ _id: id }, character, { new: true });
             if (!updatedCharacter)
-                throw new errors_1.NotFoundError(messages_enum_1.ErrorMessage.CharacterNotFound);
+                throw new errors_1.NotFoundError(error_messages_1.ErrorMessagesKeys.CHARACTER_NOT_FOUND);
             return updatedCharacter;
         });
     }
@@ -147,7 +131,7 @@ class CharacterService {
         return __awaiter(this, void 0, void 0, function* () {
             const deletedCharacter = yield character_schema_1.default.findOneAndDelete({ _id: id });
             if (!deletedCharacter)
-                throw new errors_1.NotFoundError(messages_enum_1.ErrorMessage.CharacterNotFound);
+                throw new errors_1.NotFoundError(error_messages_1.ErrorMessagesKeys.CHARACTER_NOT_FOUND);
             return { message: 'Character deleted successfully' };
         });
     }
@@ -190,7 +174,6 @@ class CharacterService {
                 });
             });
             const buffer = yield workbook.xlsx.writeBuffer();
-            console.log('email:', email);
             yield (0, nodemailer_utils_1.default)(email, buffer);
             return buffer;
         });

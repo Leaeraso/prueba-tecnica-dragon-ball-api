@@ -11,7 +11,7 @@ class UserRoute {
         this.createRoutes();
     }
     createRoutes() {
-        this.router.get('/users/authentication', user_controller_1.default.handleGetToken.bind(this));
+        this.router.post('/users/authentication', user_controller_1.default.handleGetToken.bind(this));
     }
 }
 exports.default = new UserRoute().router;

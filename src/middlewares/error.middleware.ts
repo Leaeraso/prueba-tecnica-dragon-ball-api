@@ -10,16 +10,15 @@ const errorMiddleware = (
   console.error('Error:', err);
 
   if (err instanceof BaseError) {
-    return res
-      .status(err.statusCode)
-      .json({
-        error: err.error,
-        message: err.message,
-        statusCode: err.statusCode,
-      });
+    res.status(err.statusCode).json({
+      error: err.error,
+      message: err.message,
+      statusCode: err.statusCode,
+    });
+    return;
   }
 
-  return res.status(500).json({
+  res.status(500).json({
     error: 'Internal server error',
     statusCode: 500,
     message: err.message,

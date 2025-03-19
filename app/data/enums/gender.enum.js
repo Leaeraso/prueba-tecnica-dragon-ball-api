@@ -4,5 +4,5 @@ exports.GenderEnum = void 0;
 var GenderEnum;
 (function (GenderEnum) {
     GenderEnum["Male"] = "male";
-    GenderEnum["Feale"] = "female";
+    GenderEnum["Female"] = "female";
 })(GenderEnum || (exports.GenderEnum = GenderEnum = {}));

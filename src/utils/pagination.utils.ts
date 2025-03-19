@@ -1,7 +1,7 @@
-import { generalSearchDto } from '../data/dtos/general-search.dto';
+import { GeneralSearchDto } from '../data/dtos/general-search.dto';
 import { SortEnum } from '../data/enums/sort.enum';
 
-export const pagination = (queryParams: generalSearchDto) => {
+export const pagination = (queryParams: GeneralSearchDto) => {
   const sortOptions: Record<string, 1 | -1> = {};
 
   if (queryParams.sort) {
@@ -14,7 +14,7 @@ export const pagination = (queryParams: generalSearchDto) => {
   }
 
   if (Object.keys(sortOptions).length === 0) {
-    sortOptions['id'] = SortEnum.ASC;
+    sortOptions['character_number'] = SortEnum.ASC;
   }
 
   const options = {

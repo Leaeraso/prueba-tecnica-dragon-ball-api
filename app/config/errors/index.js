@@ -1,31 +1,38 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UnauthorizedError = exports.InternalServerError = exports.BadRequestError = exports.NotFoundError = void 0;
-class NotFoundError extends Error {
-    constructor(message) {
+exports.InternalServerError = exports.UnauthorizedError = exports.BadRequestError = exports.NotFoundError = exports.BaseError = void 0;
+const error_messages_1 = require("./error-messages");
+class BaseError extends Error {
+    constructor(key) {
+        const { error, message, statusCode } = error_messages_1.errorMessages[key];
         super(message);
-        this.statusCode = 404;
+        this.error = error;
+        this.message = message;
+        this.statusCode = statusCode;
+    }
+}
+exports.BaseError = BaseError;
+class NotFoundError extends BaseError {
+    constructor(key) {
+        super(key);
     }
 }
 exports.NotFoundError = NotFoundError;
-class BadRequestError extends Error {
-    constructor(message) {
-        super(message);
-        this.statusCode = 400;
+class BadRequestError extends BaseError {
+    constructor(key) {
+        super(key);
     }
 }
 exports.BadRequestError = BadRequestError;
-class InternalServerError extends Error {
-    constructor(message) {
-        super(message);
-        this.statusCode = 500;
-    }
-}
-exports.InternalServerError = InternalServerError;
-class UnauthorizedError extends Error {
-    constructor(message) {
-        super(message);
-        this.statusCode = 401;
+class UnauthorizedError extends BaseError {
+    constructor(key) {
+        super(key);
     }
 }
 exports.UnauthorizedError = UnauthorizedError;
+class InternalServerError extends BaseError {
+    constructor(key) {
+        super(key);
+    }
+}
+exports.InternalServerError = InternalServerError;

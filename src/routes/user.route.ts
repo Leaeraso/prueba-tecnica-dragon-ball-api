@@ -10,7 +10,7 @@ class UserRoute {
   }
 
   createRoutes(): void {
-    this.router.get(
+    this.router.post(
       '/users/authentication',
       UserController.handleGetToken.bind(this)
     );

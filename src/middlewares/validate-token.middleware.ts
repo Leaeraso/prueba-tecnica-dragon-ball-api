@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import config from '../config/index';
 import { UnauthorizedError } from '../config/errors';
-import { ErrorMessage } from '../config/errors/error-messages';
+import { ErrorMessagesKeys } from '../config/errors/error-messages';
 
 interface authRequest extends Request {
   user?: any;
@@ -21,7 +21,7 @@ const validateToken = (req: authRequest, res: Response, next: NextFunction) => {
     req.user = decoded;
     next();
   } catch (error: any) {
-    const authError = new UnauthorizedError(ErrorMessage.InvalidToken);
+    const authError = new UnauthorizedError(ErrorMessagesKeys.INVALID_TOKEN);
     next(authError);
   }
 };

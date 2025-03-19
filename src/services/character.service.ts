@@ -11,7 +11,7 @@ import { BadRequestError, NotFoundError } from '../config/errors';
 import validateData from '../helpers/validate.helper';
 import exceljs from 'exceljs';
 import sendExcelByEmail from '../utils/nodemailer.utils';
-import RedisConnection from '../config/redis.config';
+// import RedisConnection from '../config/redis.config';
 import { ErrorMessagesKeys } from '../config/errors/error-messages';
 import parseKi from '../utils/parseKi.utils';
 
@@ -23,7 +23,7 @@ interface ApiResponse {
   };
 }
 
-const client = RedisConnection.getClient();
+// const client = RedisConnection.getClient();
 
 class CharacterService {
   async getAndSaveCharacters() {
@@ -104,12 +104,12 @@ class CharacterService {
       );
     }
 
-    const reply = await client.get('characters');
-    if (reply) return JSON.parse(reply);
+    // const reply = await client.get('characters');
+    // if (reply) return JSON.parse(reply);
 
     const characters = await CharacterModel.paginate(query, options);
 
-    await client.set('characters', JSON.stringify(characters));
+    // await client.set('characters', JSON.stringify(characters));
 
     return {
       data: characters.docs,
@@ -230,9 +230,8 @@ class CharacterService {
 
     const buffer = await workbook.xlsx.writeBuffer();
 
-    console.log('email:', email);
-
     await sendExcelByEmail(email, buffer as Buffer);
+
     return buffer;
   }
 }

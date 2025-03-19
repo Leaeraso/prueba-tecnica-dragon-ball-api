@@ -13,10 +13,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const index_1 = __importDefault(require("../config/index"));
+const errors_1 = require("../config/errors");
+const error_messages_1 = require("../config/errors/error-messages");
 class UserService {
-    getToken() {
+    authenticateUser(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            const token = jsonwebtoken_1.default.sign({}, 'secret', { expiresIn: '1d' });
+            if (!user.email || !user.username) {
+                throw new errors_1.BadRequestError(error_messages_1.ErrorMessagesKeys.MISSING_DATA_USER);
+            }
+            const token = jsonwebtoken_1.default.sign({ user }, index_1.default.SECRET_KEY, { expiresIn: '1d' });
             return {
                 token: token,
             };
