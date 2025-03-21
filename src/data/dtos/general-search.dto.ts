@@ -9,6 +9,9 @@ export interface GeneralSearchDto {
   page_size: number;
   sort?: string;
   sort_dir?: string;
+}
+
+export interface GeneralSearchDtoWithKiFilters extends GeneralSearchDto {
   ki_min?: number;
   ki_max?: number;
 }

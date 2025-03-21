@@ -2,7 +2,7 @@ import config from '../config/index';
 import axios from 'axios';
 import { CharacterDto } from '../data/dtos/character.dto';
 import CharacterModel from '../models/schemas/character.schema';
-import { GeneralSearchDto } from '../data/dtos/general-search.dto';
+import { GeneralSearchDtoWithKiFilters } from '../data/dtos/general-search.dto';
 import { pagination } from '../utils/pagination.utils';
 import { BadRequestError, NotFoundError } from '../config/errors';
 import validateData from '../helpers/validate.helper';
@@ -90,14 +90,15 @@ class CharacterService {
   async getAndSaveCharacters() {
     const characters = await this.fetchCharacters();
 
-    //Error
+    if (!characters)
+      throw new BadRequestError(ErrorMessagesKeys.ERROR_OBTAINING_CHARACTERS);
 
     await this.saveCharactersInBatches(characters);
 
     return { message: 'Data obtained and saved successfully' };
   }
 
-  async getCharacters(queryParams: GeneralSearchDto) {
+  async getCharacters(queryParams: GeneralSearchDtoWithKiFilters) {
     const { options } = pagination(queryParams);
 
     const query: Record<string, any> = {
@@ -191,7 +192,10 @@ class CharacterService {
     return { message: 'Character deleted successfully' };
   }
 
-  async exportCharactersToExcel(queryParams: GeneralSearchDto, email: string) {
+  async exportCharactersToExcel(
+    queryParams: GeneralSearchDtoWithKiFilters,
+    email: string
+  ) {
     const { options } = pagination(queryParams);
 
     const query: Record<string, any> = {

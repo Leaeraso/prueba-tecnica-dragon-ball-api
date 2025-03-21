@@ -7,6 +7,7 @@ export enum ErrorMessagesKeys {
   INVALID_TOKEN = 'INVALID_TOKEN',
   ERROR_SENDING_EMAIL = 'ERROR_SENDING_EMAIL',
   ERROR_SAVING_CHARACTERS = 'ERROR_SAVING_CHARACTERS',
+  ERROR_OBTAINING_CHARACTERS = 'ERROR_OBTAINING_CHARACTERS',
 }
 
 export const errorMessages = {
@@ -49,5 +50,10 @@ export const errorMessages = {
     error: 'Internal server error',
     message: 'Error saving characters',
     statusCode: 500,
+  },
+  [ErrorMessagesKeys.ERROR_OBTAINING_CHARACTERS]: {
+    error: 'Invalid request',
+    message: 'Error obtaining characters',
+    statusCode: 400,
   },
 };
