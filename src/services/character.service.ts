@@ -4,11 +4,7 @@ import { CharacterDto } from '../data/dtos/character.dto';
 import CharacterModel from '../models/schemas/character.schema';
 import { GeneralSearchDto } from '../data/dtos/general-search.dto';
 import { pagination } from '../utils/pagination.utils';
-import {
-  BadRequestError,
-  InternalServerError,
-  NotFoundError,
-} from '../config/errors';
+import { BadRequestError, NotFoundError } from '../config/errors';
 import validateData from '../helpers/validate.helper';
 import exceljs from 'exceljs';
 import sendExcelByEmail from '../utils/nodemailer.utils';
@@ -66,29 +62,40 @@ class CharacterService {
   async saveCharactersInBatches(characters: CharacterDto[]) {
     const batchSize = 10;
 
+    console.log('characters length: ', characters.length);
+
     for (let i = 0; i < characters.length; i += batchSize) {
       const batch = characters.slice(i, i + batchSize);
 
-      try {
-        Promise.allSettled(
-          batch.map((character) => {
-            CharacterModel.updateOne(
-              { character_number: character.character_number },
-              { $set: character },
-              { upsert: true }
-            );
-          })
-        );
-      } catch (error) {
-        console.error(`Error saving characters:`, error);
-        throw new InternalServerError(
-          ErrorMessagesKeys.ERROR_SAVING_CHARACTERS
-        );
-      }
+      const results = await Promise.allSettled(
+        batch.map((character) =>
+          CharacterModel.updateOne(
+            { character_number: character.character_number },
+            { $set: character },
+            { upsert: true }
+          )
+        )
+      );
+
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          console.error(
+            `Error saving character ${batch[index].character_number}: ${result.reason} `
+          );
+        }
+      });
     }
   }
 
-  async getAndSaveCharacters() {}
+  async getAndSaveCharacters() {
+    const characters = await this.fetchCharacters();
+
+    //Error
+
+    await this.saveCharactersInBatches(characters);
+
+    return { message: 'Data obtained and saved successfully' };
+  }
 
   async getCharacters(queryParams: GeneralSearchDto) {
     const { options } = pagination(queryParams);

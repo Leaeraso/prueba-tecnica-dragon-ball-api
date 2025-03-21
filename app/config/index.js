@@ -4,9 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
+const errors_1 = require("./errors");
+const error_messages_1 = require("./errors/error-messages");
 const envFound = dotenv_1.default.config();
 if (envFound.error) {
-    throw new Error(`Couldn't find .env file`);
+    throw new errors_1.NotFoundError(error_messages_1.ErrorMessagesKeys.ENV_FILE_NOT_FOUND);
 }
 exports.default = {
     HTTP_PORT: Number(process.env.HTTP_PORT) || 9000,

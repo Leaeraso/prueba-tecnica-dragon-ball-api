@@ -3,14 +3,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.errorMessages = exports.ErrorMessagesKeys = void 0;
 var ErrorMessagesKeys;
 (function (ErrorMessagesKeys) {
+    ErrorMessagesKeys["ENV_FILE_NOT_FOUND"] = "ENV_FILE_NOT_FOUND";
     ErrorMessagesKeys["CHARACTER_NOT_FOUND"] = "CHARACTER_NOT_FOUND";
     ErrorMessagesKeys["INVALID_API_RESPONSE"] = "INVALID_API_RESPONSE";
     ErrorMessagesKeys["CHARACTER_ALREADY_EXISTS"] = "CHARACTER_ALREADY_EXISTS";
     ErrorMessagesKeys["MISSING_DATA_USER"] = "MISSING_DATA_USER";
     ErrorMessagesKeys["INVALID_TOKEN"] = "INVALID_TOKEN";
     ErrorMessagesKeys["ERROR_SENDING_EMAIL"] = "ERROR_SENDING_EMAIL";
+    ErrorMessagesKeys["ERROR_SAVING_CHARACTERS"] = "ERROR_SAVING_CHARACTERS";
 })(ErrorMessagesKeys || (exports.ErrorMessagesKeys = ErrorMessagesKeys = {}));
 exports.errorMessages = {
+    [ErrorMessagesKeys.ENV_FILE_NOT_FOUND]: {
+        error: 'Resource not found',
+        message: 'Could not find .env file',
+        statusCode: 404,
+    },
     [ErrorMessagesKeys.CHARACTER_NOT_FOUND]: {
         error: 'Resource not found',
         message: 'Character not found',
@@ -39,6 +46,11 @@ exports.errorMessages = {
     [ErrorMessagesKeys.ERROR_SENDING_EMAIL]: {
         error: 'Internal server error',
         message: 'Error sending the mail',
+        statusCode: 500,
+    },
+    [ErrorMessagesKeys.ERROR_SAVING_CHARACTERS]: {
+        error: 'Internal server error',
+        message: 'Error saving characters',
         statusCode: 500,
     },
 };

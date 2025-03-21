@@ -25,11 +25,10 @@ const error_messages_1 = require("../config/errors/error-messages");
 const parseKi_utils_1 = __importDefault(require("../utils/parseKi.utils"));
 // const client = RedisConnection.getClient();
 class CharacterService {
-    getAndSaveCharacters() {
+    fetchCharacters() {
         return __awaiter(this, void 0, void 0, function* () {
             let page = 1;
             let characters = [];
-            let normalizedCharacters = [];
             let totalPages = 1;
             while (page <= totalPages) {
                 const response = yield axios_1.default.get(`${index_1.default.FETCH_URI}?page=${page}`);
@@ -42,17 +41,6 @@ class CharacterService {
                 const pageCharacters = response.data.items.map((character) => ({
                     character_number: character.id,
                     name: character.name,
-                    ki: character.ki,
-                    maxKi: character.maxKi,
-                    race: character.race,
-                    gender: character.gender,
-                    description: character.description,
-                    image: character.image,
-                }));
-                characters = [...characters, ...pageCharacters];
-                normalizedCharacters = characters.map((character) => ({
-                    character_number: character.character_number,
-                    name: character.name,
                     ki: (0, parseKi_utils_1.default)(character.ki),
                     maxKi: (0, parseKi_utils_1.default)(character.maxKi),
                     race: character.race,
@@ -60,11 +48,32 @@ class CharacterService {
                     description: character.description,
                     image: character.image,
                 }));
+                characters.push(...pageCharacters);
                 page++;
             }
-            for (const character of normalizedCharacters) {
-                yield character_schema_1.default.updateOne({ character_number: character.character_number }, { $set: character }, { upsert: true });
+            return characters;
+        });
+    }
+    saveCharactersInBatches(characters) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const batchSize = 10;
+            console.log('characters length: ', characters.length);
+            for (let i = 0; i < characters.length; i += batchSize) {
+                const batch = characters.slice(i, i + batchSize);
+                const results = yield Promise.allSettled(batch.map((character) => character_schema_1.default.updateOne({ character_number: character.character_number }, { $set: character }, { upsert: true })));
+                results.forEach((result, index) => {
+                    if (result.status === 'rejected') {
+                        console.error(`Error saving character ${batch[index].character_number}: ${result.reason} `);
+                    }
+                });
             }
+        });
+    }
+    getAndSaveCharacters() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const characters = yield this.fetchCharacters();
+            //Error
+            yield this.saveCharactersInBatches(characters);
             return { message: 'Data obtained and saved successfully' };
         });
     }
