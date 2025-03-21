@@ -11,6 +11,7 @@ var ErrorMessagesKeys;
     ErrorMessagesKeys["INVALID_TOKEN"] = "INVALID_TOKEN";
     ErrorMessagesKeys["ERROR_SENDING_EMAIL"] = "ERROR_SENDING_EMAIL";
     ErrorMessagesKeys["ERROR_SAVING_CHARACTERS"] = "ERROR_SAVING_CHARACTERS";
+    ErrorMessagesKeys["ERROR_OBTAINING_CHARACTERS"] = "ERROR_OBTAINING_CHARACTERS";
 })(ErrorMessagesKeys || (exports.ErrorMessagesKeys = ErrorMessagesKeys = {}));
 exports.errorMessages = {
     [ErrorMessagesKeys.ENV_FILE_NOT_FOUND]: {
@@ -52,5 +53,10 @@ exports.errorMessages = {
         error: 'Internal server error',
         message: 'Error saving characters',
         statusCode: 500,
+    },
+    [ErrorMessagesKeys.ERROR_OBTAINING_CHARACTERS]: {
+        error: 'Invalid request',
+        message: 'Error obtaining characters',
+        statusCode: 400,
     },
 };

@@ -20,10 +20,10 @@ const errors_1 = require("../config/errors");
 const validate_helper_1 = __importDefault(require("../helpers/validate.helper"));
 const exceljs_1 = __importDefault(require("exceljs"));
 const nodemailer_utils_1 = __importDefault(require("../utils/nodemailer.utils"));
-// import RedisConnection from '../config/redis.config';
+const redis_config_1 = __importDefault(require("../config/redis.config"));
 const error_messages_1 = require("../config/errors/error-messages");
 const parseKi_utils_1 = __importDefault(require("../utils/parseKi.utils"));
-// const client = RedisConnection.getClient();
+const client = redis_config_1.default.getClient();
 class CharacterService {
     fetchCharacters() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -72,7 +72,8 @@ class CharacterService {
     getAndSaveCharacters() {
         return __awaiter(this, void 0, void 0, function* () {
             const characters = yield this.fetchCharacters();
-            //Error
+            if (!characters)
+                throw new errors_1.BadRequestError(error_messages_1.ErrorMessagesKeys.ERROR_OBTAINING_CHARACTERS);
             yield this.saveCharactersInBatches(characters);
             return { message: 'Data obtained and saved successfully' };
         });
@@ -89,10 +90,12 @@ class CharacterService {
             if (queryParams.ki_min || queryParams.ki_max) {
                 query.ki = Object.assign({}, queryParams.ki_min && { $gte: queryParams.ki_min }, queryParams.ki_max && { $lte: queryParams.ki_max });
             }
-            // const reply = await client.get('characters');
-            // if (reply) return JSON.parse(reply);
+            const cacheKey = `characters:${JSON.stringify(queryParams)}`;
+            const reply = yield client.get(cacheKey);
+            if (reply)
+                return JSON.parse(reply);
             const characters = yield character_schema_1.default.paginate(query, options);
-            // await client.set('characters', JSON.stringify(characters));
+            yield client.setEx(cacheKey, 600, JSON.stringify(characters));
             return {
                 data: characters.docs,
                 paginate: {
@@ -146,19 +149,29 @@ class CharacterService {
     }
     exportCharactersToExcel(queryParams, email) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { options } = (0, pagination_utils_1.pagination)(queryParams);
-            const query = Object.assign(Object.assign(Object.assign({}, (queryParams.search && {
-                $or: [
-                    { name: { $regex: queryParams.search, $options: 'i' } },
-                    { description: { $regex: queryParams.search, $options: 'i' } },
-                ],
-            })), (queryParams.race && { race: queryParams.race })), (queryParams.gender && { gender: queryParams.gender }));
-            if (queryParams.ki_min || queryParams.ki_max) {
-                query.ki = Object.assign({}, queryParams.ki_min && { $gte: queryParams.ki_min }, queryParams.ki_max && { $lte: queryParams.ki_max });
-            }
-            const characters = yield character_schema_1.default.find(query)
-                .sort(options.sort)
-                .select('id name ki max_ki race gender description');
+            //   const { options } = pagination(queryParams);
+            //   const query: Record<string, any> = {
+            //     ...(queryParams.search && {
+            //       $or: [
+            //         { name: { $regex: queryParams.search, $options: 'i' } },
+            //         { description: { $regex: queryParams.search, $options: 'i' } },
+            //       ],
+            //     }),
+            //     ...(queryParams.race && { race: queryParams.race }),
+            //     ...(queryParams.gender && { gender: queryParams.gender }),
+            //   };
+            //   if (queryParams.ki_min || queryParams.ki_max) {
+            //     query.ki = Object.assign(
+            //       {},
+            //       queryParams.ki_min && { $gte: queryParams.ki_min },
+            //       queryParams.ki_max && { $lte: queryParams.ki_max }
+            //     );
+            //   }
+            //   const characters = await CharacterModel.find(query)
+            //     .sort(options.sort)
+            //     .select('id name ki max_ki race gender description');
+            //   const workbook = new exceljs.Workbook();
+            const characters = yield this.getCharacters(queryParams);
             const workbook = new exceljs_1.default.Workbook();
             const worksheet = workbook.addWorksheet('Characters');
             worksheet.columns = [
@@ -172,10 +185,10 @@ class CharacterService {
             ];
             characters.forEach((character) => {
                 worksheet.addRow({
-                    id: character.id,
+                    id: character.character_number,
                     name: character.name,
                     ki: character.ki,
-                    maxKi: character.max_ki,
+                    maxKi: character.maxKi,
                     race: character.race,
                     gender: character.gender,
                     description: character.description,

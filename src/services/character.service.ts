@@ -8,7 +8,7 @@ import { BadRequestError, NotFoundError } from '../config/errors';
 import validateData from '../helpers/validate.helper';
 import exceljs from 'exceljs';
 import sendExcelByEmail from '../utils/nodemailer.utils';
-// import RedisConnection from '../config/redis.config';
+import RedisConnection from '../config/redis.config';
 import { ErrorMessagesKeys } from '../config/errors/error-messages';
 import parseKi from '../utils/parseKi.utils';
 
@@ -20,7 +20,7 @@ interface ApiResponse {
   };
 }
 
-// const client = RedisConnection.getClient();
+const client = RedisConnection.getClient();
 
 class CharacterService {
   async fetchCharacters() {
@@ -120,12 +120,14 @@ class CharacterService {
       );
     }
 
-    // const reply = await client.get('characters');
-    // if (reply) return JSON.parse(reply);
+    const cacheKey = `characters:${JSON.stringify(queryParams)}`;
+
+    const reply = await client.get(cacheKey);
+    if (reply) return JSON.parse(reply);
 
     const characters = await CharacterModel.paginate(query, options);
 
-    // await client.set('characters', JSON.stringify(characters));
+    await client.setEx(cacheKey, 600, JSON.stringify(characters));
 
     return {
       data: characters.docs,
@@ -196,30 +198,33 @@ class CharacterService {
     queryParams: GeneralSearchDtoWithKiFilters,
     email: string
   ) {
-    const { options } = pagination(queryParams);
+    //   const { options } = pagination(queryParams);
 
-    const query: Record<string, any> = {
-      ...(queryParams.search && {
-        $or: [
-          { name: { $regex: queryParams.search, $options: 'i' } },
-          { description: { $regex: queryParams.search, $options: 'i' } },
-        ],
-      }),
-      ...(queryParams.race && { race: queryParams.race }),
-      ...(queryParams.gender && { gender: queryParams.gender }),
-    };
+    //   const query: Record<string, any> = {
+    //     ...(queryParams.search && {
+    //       $or: [
+    //         { name: { $regex: queryParams.search, $options: 'i' } },
+    //         { description: { $regex: queryParams.search, $options: 'i' } },
+    //       ],
+    //     }),
+    //     ...(queryParams.race && { race: queryParams.race }),
+    //     ...(queryParams.gender && { gender: queryParams.gender }),
+    //   };
 
-    if (queryParams.ki_min || queryParams.ki_max) {
-      query.ki = Object.assign(
-        {},
-        queryParams.ki_min && { $gte: queryParams.ki_min },
-        queryParams.ki_max && { $lte: queryParams.ki_max }
-      );
-    }
+    //   if (queryParams.ki_min || queryParams.ki_max) {
+    //     query.ki = Object.assign(
+    //       {},
+    //       queryParams.ki_min && { $gte: queryParams.ki_min },
+    //       queryParams.ki_max && { $lte: queryParams.ki_max }
+    //     );
+    //   }
 
-    const characters = await CharacterModel.find(query)
-      .sort(options.sort)
-      .select('id name ki max_ki race gender description');
+    //   const characters = await CharacterModel.find(query)
+    //     .sort(options.sort)
+    //     .select('id name ki max_ki race gender description');
+
+    //   const workbook = new exceljs.Workbook();
+    const characters: CharacterDto[] = await this.getCharacters(queryParams);
 
     const workbook = new exceljs.Workbook();
     const worksheet = workbook.addWorksheet('Characters');
@@ -236,10 +241,10 @@ class CharacterService {
 
     characters.forEach((character) => {
       worksheet.addRow({
-        id: character.id,
+        id: character.character_number,
         name: character.name,
         ki: character.ki,
-        maxKi: character.max_ki,
+        maxKi: character.maxKi,
         race: character.race,
         gender: character.gender,
         description: character.description,

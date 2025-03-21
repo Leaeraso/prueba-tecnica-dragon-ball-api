@@ -44,6 +44,12 @@ paths:
       responses:
         200:
           description: Data obtained and saved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CharacterWithId"
         400:
           description: Invalid API response
       security:

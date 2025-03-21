@@ -18,11 +18,11 @@
 
 # getCharacters
 
-- El uso de la cache esta mal hecho, si la query es distinta porq usa algun filtro o el paginado mismo, te va a responder con los mismos personajes. La key de la cache debería tener los parametros de la query
+✅ El uso de la cache esta mal hecho, si la query es distinta porq usa algun filtro o el paginado mismo, te va a responder con los mismos personajes. La key de la cache debería tener los parametros de la query
 
 ✅ getCharacterById, affiliate?????
 
-- Se repite la query de los personajes (en el exportar por excel y el buscarlos), se debería crear una funcion que lo devuelva para reutilizar y evitar problemas futuros.
+🛠️ Se repite la query de los personajes (en el exportar por excel y el buscarlos), se debería crear una funcion que lo devuelva para reutilizar y evitar problemas futuros.
 
 - Crear personaje, si creo una y despues fetcheo mi personaje va a ser sobrescrito
 
@@ -33,4 +33,4 @@
 
 ✅ Middleware de validacion de token, el error respondido tampoco esta en el archivo de errores.
 
-- Swagger, la ruta de fetch-characters-data tiene un typo y no funciona
+✅ Swagger, la ruta de fetch-characters-data tiene un typo y no funciona
