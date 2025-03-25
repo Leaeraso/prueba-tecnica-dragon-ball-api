@@ -42,7 +42,7 @@ class CharacterService {
                     character_number: character.id,
                     name: character.name,
                     ki: (0, parseKi_utils_1.default)(character.ki),
-                    maxKi: (0, parseKi_utils_1.default)(character.maxKi),
+                    max_ki: (0, parseKi_utils_1.default)(character.maxKi),
                     race: character.race,
                     gender: character.gender,
                     description: character.description,
@@ -149,29 +149,8 @@ class CharacterService {
     }
     exportCharactersToExcel(queryParams, email) {
         return __awaiter(this, void 0, void 0, function* () {
-            //   const { options } = pagination(queryParams);
-            //   const query: Record<string, any> = {
-            //     ...(queryParams.search && {
-            //       $or: [
-            //         { name: { $regex: queryParams.search, $options: 'i' } },
-            //         { description: { $regex: queryParams.search, $options: 'i' } },
-            //       ],
-            //     }),
-            //     ...(queryParams.race && { race: queryParams.race }),
-            //     ...(queryParams.gender && { gender: queryParams.gender }),
-            //   };
-            //   if (queryParams.ki_min || queryParams.ki_max) {
-            //     query.ki = Object.assign(
-            //       {},
-            //       queryParams.ki_min && { $gte: queryParams.ki_min },
-            //       queryParams.ki_max && { $lte: queryParams.ki_max }
-            //     );
-            //   }
-            //   const characters = await CharacterModel.find(query)
-            //     .sort(options.sort)
-            //     .select('id name ki max_ki race gender description');
-            //   const workbook = new exceljs.Workbook();
             const characters = yield this.getCharacters(queryParams);
+            console.log('characters: ', characters.docs);
             const workbook = new exceljs_1.default.Workbook();
             const worksheet = workbook.addWorksheet('Characters');
             worksheet.columns = [
@@ -183,12 +162,12 @@ class CharacterService {
                 { header: 'gender', key: 'gender', width: 20 },
                 { header: 'description', key: 'description', width: 20 },
             ];
-            characters.forEach((character) => {
+            characters.docs.forEach((character) => {
                 worksheet.addRow({
                     id: character.character_number,
                     name: character.name,
                     ki: character.ki,
-                    maxKi: character.maxKi,
+                    maxKi: character.max_ki,
                     race: character.race,
                     gender: character.gender,
                     description: character.description,

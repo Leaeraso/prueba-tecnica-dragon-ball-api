@@ -6,7 +6,7 @@ export interface CharacterDto {
   character_number: number;
   name: string;
   ki: number | null;
-  maxKi: number | null;
+  max_ki: number | null;
   race: RaceEnum;
   gender: GenderEnum;
   description: string;

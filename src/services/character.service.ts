@@ -45,7 +45,7 @@ class CharacterService {
         character_number: character.id,
         name: character.name,
         ki: parseKi(character.ki),
-        maxKi: parseKi(character.maxKi),
+        max_ki: parseKi(character.maxKi),
         race: character.race,
         gender: character.gender,
         description: character.description,
@@ -66,6 +66,8 @@ class CharacterService {
 
     for (let i = 0; i < characters.length; i += batchSize) {
       const batch = characters.slice(i, i + batchSize);
+
+      // const nextCharacterNumber = await this.getNextCharacterNumber();
 
       const results = await Promise.allSettled(
         batch.map((character) =>
@@ -198,33 +200,8 @@ class CharacterService {
     queryParams: GeneralSearchDtoWithKiFilters,
     email: string
   ) {
-    //   const { options } = pagination(queryParams);
-
-    //   const query: Record<string, any> = {
-    //     ...(queryParams.search && {
-    //       $or: [
-    //         { name: { $regex: queryParams.search, $options: 'i' } },
-    //         { description: { $regex: queryParams.search, $options: 'i' } },
-    //       ],
-    //     }),
-    //     ...(queryParams.race && { race: queryParams.race }),
-    //     ...(queryParams.gender && { gender: queryParams.gender }),
-    //   };
-
-    //   if (queryParams.ki_min || queryParams.ki_max) {
-    //     query.ki = Object.assign(
-    //       {},
-    //       queryParams.ki_min && { $gte: queryParams.ki_min },
-    //       queryParams.ki_max && { $lte: queryParams.ki_max }
-    //     );
-    //   }
-
-    //   const characters = await CharacterModel.find(query)
-    //     .sort(options.sort)
-    //     .select('id name ki max_ki race gender description');
-
-    //   const workbook = new exceljs.Workbook();
-    const characters: CharacterDto[] = await this.getCharacters(queryParams);
+    const characters = await this.getCharacters(queryParams);
+    console.log('characters: ', characters.docs);
 
     const workbook = new exceljs.Workbook();
     const worksheet = workbook.addWorksheet('Characters');
@@ -239,12 +216,12 @@ class CharacterService {
       { header: 'description', key: 'description', width: 20 },
     ];
 
-    characters.forEach((character) => {
+    characters.docs.forEach((character: CharacterDto) => {
       worksheet.addRow({
         id: character.character_number,
         name: character.name,
         ki: character.ki,
-        maxKi: character.maxKi,
+        maxKi: character.max_ki,
         race: character.race,
         gender: character.gender,
         description: character.description,
@@ -257,6 +234,13 @@ class CharacterService {
     await sendExcelByEmail(email, buffer as Buffer);
 
     return buffer;
+  }
+
+  async getNextCharacterNumber() {
+    const lastCharacter = await CharacterModel.findOne()
+      .sort({ character_number: -1 })
+      .limit(1);
+    return lastCharacter ? lastCharacter.character_number + 1 : 1;
   }
 }
 

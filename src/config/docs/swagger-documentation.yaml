@@ -178,7 +178,7 @@ paths:
               $ref: "#/components/schemas/ExcelRequest"
       responses:
         200:
-          description: A message and an excel file
+          description: Return an excel file
         500:
           description: Internal server error
       security:
