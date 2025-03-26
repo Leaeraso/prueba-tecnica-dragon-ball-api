@@ -1,7 +1,7 @@
 import { GenderEnum } from '../enums/gender.enum';
 import { RaceEnum } from '../enums/race.enum';
 
-export interface generalSearchDto {
+export interface GeneralSearchDto {
   search: string;
   race: RaceEnum;
   gender: GenderEnum;
@@ -9,6 +9,9 @@ export interface generalSearchDto {
   page_size: number;
   sort?: string;
   sort_dir?: string;
+}
+
+export interface GeneralSearchDtoWithKiFilters extends GeneralSearchDto {
   ki_min?: number;
   ki_max?: number;
 }

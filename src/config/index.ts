@@ -1,8 +1,10 @@
 import dotenv from 'dotenv';
+import { NotFoundError } from './errors';
+import { ErrorMessagesKeys } from './errors/error-messages';
 
 const envFound = dotenv.config();
 if (envFound.error) {
-  throw new Error(`Couldn't find .env file`);
+  throw new NotFoundError(ErrorMessagesKeys.ENV_FILE_NOT_FOUND);
 }
 
 export default {

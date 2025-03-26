@@ -50,10 +50,7 @@ class CharacterController {
             .then((result) => {
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', 'attachment; filename=personajes.xlsx');
-            res.send({
-                message: `Excel file was sent to ${req.body.email}, but you can download it from here.`,
-                result,
-            });
+            res.send(result);
         })
             .catch((err) => next(err));
     }

@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const index_1 = __importDefault(require("../config/index"));
 const errors_1 = require("../config/errors");
-const messages_enum_1 = require("../config/errors/messages.enum");
+const error_messages_1 = require("../config/errors/error-messages");
 const transporter = nodemailer_1.default.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
@@ -45,7 +45,7 @@ const sendExcelByEmail = (email, excelBuffer) => __awaiter(void 0, void 0, void 
     }
     catch (error) {
         console.error('Error sending the mail: ', error);
-        throw new errors_1.InternalServerError(messages_enum_1.ErrorMessage.ErrorSendingEmail);
+        throw new errors_1.InternalServerError(error_messages_1.ErrorMessagesKeys.ERROR_SENDING_EMAIL);
     }
 });
 exports.default = sendExcelByEmail;

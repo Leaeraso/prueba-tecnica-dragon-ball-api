@@ -17,10 +17,16 @@ paths:
               schema:
                 $ref: "#/components/schemas/TestResponse"
   /users/authentication:
-    get:
+    post:
       tags:
         - Users
       summary: Get token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
       responses:
         200:
           description: Return token
@@ -30,7 +36,7 @@ paths:
                 $ref: "#/components/schemas/UserToken"
         500:
           description: Internal server error
-  /fetch-caracters-data:
+  /fetch-characters-data:
     get:
       tags:
         - Characters
@@ -38,7 +44,13 @@ paths:
       responses:
         200:
           description: Data obtained and saved successfully
-        404:
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CharacterWithId"
+        400:
           description: Invalid API response
       security:
         - bearerAuth: []
@@ -163,10 +175,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ExcelRequest'
+              $ref: "#/components/schemas/ExcelRequest"
       responses:
         200:
-          description: A message and an excel file
+          description: Return an excel file
         500:
           description: Internal server error
       security:
@@ -180,6 +192,13 @@ components:
           type: string
         status:
           type: integer
+    User:
+      type: object
+      properties:
+        email:
+          type: string
+        username:
+          type: string
     UserToken:
       type: object
       properties:

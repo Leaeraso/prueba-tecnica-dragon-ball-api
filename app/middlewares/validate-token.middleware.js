@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const index_1 = __importDefault(require("../config/index"));
 const errors_1 = require("../config/errors");
-const messages_enum_1 = require("../config/errors/messages.enum");
+const error_messages_1 = require("../config/errors/error-messages");
 const validateToken = (req, res, next) => {
     var _a;
     const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
@@ -20,7 +20,7 @@ const validateToken = (req, res, next) => {
         next();
     }
     catch (error) {
-        const authError = new errors_1.UnauthorizedError(messages_enum_1.ErrorMessage.InvalidToken);
+        const authError = new errors_1.UnauthorizedError(error_messages_1.ErrorMessagesKeys.INVALID_TOKEN);
         next(authError);
     }
 };

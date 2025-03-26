@@ -1,19 +1,16 @@
 import config from '../config/index';
 import axios from 'axios';
-import {
-  characterDto,
-  normalizedCharacterDto,
-} from '../data/dtos/character.dto';
+import { CharacterDto } from '../data/dtos/character.dto';
 import CharacterModel from '../models/schemas/character.schema';
-import { generalSearchDto } from '../data/dtos/general-search.dto';
+import { GeneralSearchDtoWithKiFilters } from '../data/dtos/general-search.dto';
 import { pagination } from '../utils/pagination.utils';
 import { BadRequestError, NotFoundError } from '../config/errors';
-import { ErrorMessage } from '../config/errors/messages.enum';
-import { SuffixesEnum } from '../data/enums/suffixes.enum';
 import validateData from '../helpers/validate.helper';
 import exceljs from 'exceljs';
 import sendExcelByEmail from '../utils/nodemailer.utils';
 import RedisConnection from '../config/redis.config';
+import { ErrorMessagesKeys } from '../config/errors/error-messages';
+import parseKi from '../utils/parse-ki.utils';
 
 interface ApiResponse {
   items: any[];
@@ -23,33 +20,12 @@ interface ApiResponse {
   };
 }
 
-const parseKi = (ki: string): number | null => {
-  const normalizedKi = ki.toLowerCase().replace(/[,.]/g, '');
-
-  if (!isNaN(Number(normalizedKi))) {
-    return Number(normalizedKi);
-  }
-
-  const match = normalizedKi.match(/^([\d\.]+)\s*([a-zA-Z]+)$/);
-  if (match) {
-    const numberPart = parseFloat(match[1]);
-    const suffix = match[2] as keyof typeof SuffixesEnum;
-
-    if (SuffixesEnum[suffix]) {
-      return numberPart * SuffixesEnum[suffix];
-    }
-  }
-
-  return null;
-};
-
 const client = RedisConnection.getClient();
 
 class CharacterService {
-  async getAndSaveCharacters() {
+  async fetchCharacters() {
     let page = 1;
-    let characters: characterDto[] = [];
-    let normalizedCharacters: normalizedCharacterDto[] = [];
+    let characters: CharacterDto[] = [];
     let totalPages = 1;
 
     while (page <= totalPages) {
@@ -58,7 +34,7 @@ class CharacterService {
       );
 
       if (!response.data || !response.data.meta) {
-        throw new Error('Invalid API response');
+        throw new BadRequestError(ErrorMessagesKeys.INVALID_API_RESPONSE);
       }
 
       if (page === 1) {
@@ -68,41 +44,74 @@ class CharacterService {
       const pageCharacters = response.data.items.map((character) => ({
         character_number: character.id,
         name: character.name,
-        ki: character.ki,
-        maxKi: character.maxKi,
-        race: character.race,
-        gender: character.gender,
-        description: character.description,
-        image: character.image,
-      }));
-
-      characters = [...characters, ...pageCharacters];
-
-      normalizedCharacters = characters.map((character) => ({
-        character_number: character.character_number,
-        name: character.name,
         ki: parseKi(character.ki),
-        maxKi: parseKi(character.maxKi),
+        max_ki: parseKi(character.maxKi),
         race: character.race,
         gender: character.gender,
         description: character.description,
         image: character.image,
       }));
+
+      characters.push(...pageCharacters);
+
       page++;
     }
+    return characters;
+  }
 
-    for (const character of normalizedCharacters) {
-      await CharacterModel.updateOne(
-        { character_number: character.character_number },
-        { $set: character },
-        { upsert: true }
+  async saveCharactersInBatches(characters: CharacterDto[]) {
+    const batchSize = 10;
+
+    let usedNumbers = await this.getCharacterNumbers();
+
+    for (let i = 0; i < characters.length; i += batchSize) {
+      const batch = characters.slice(i, i + batchSize);
+
+      const results = await Promise.allSettled(
+        batch.map(async (character) => {
+          const existingCharacter = await CharacterModel.findOne({
+            name: character.name,
+          });
+
+          if (existingCharacter) {
+            character.character_number = existingCharacter.character_number;
+          } else {
+            while (usedNumbers.has(character.character_number)) {
+              character.character_number++;
+            }
+            usedNumbers.add(character.character_number);
+          }
+
+          await CharacterModel.updateOne(
+            { name: character.name },
+            { $set: character },
+            { upsert: true }
+          );
+        })
       );
+
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          console.error(
+            `Error saving character ${batch[index].character_number}: ${result.reason} `
+          );
+        }
+      });
     }
+  }
+
+  async getAndSaveCharacters() {
+    const characters = await this.fetchCharacters();
+
+    if (!characters)
+      throw new BadRequestError(ErrorMessagesKeys.ERROR_OBTAINING_CHARACTERS);
+
+    await this.saveCharactersInBatches(characters);
 
     return { message: 'Data obtained and saved successfully' };
   }
 
-  async getCharacters(queryParams: generalSearchDto) {
+  async getCharacters(queryParams: GeneralSearchDtoWithKiFilters) {
     const { options } = pagination(queryParams);
 
     const query: Record<string, any> = {
@@ -124,12 +133,14 @@ class CharacterService {
       );
     }
 
-    const reply = await client.get('characters');
+    const cacheKey = `characters:${JSON.stringify(queryParams)}`;
+
+    const reply = await client.get(cacheKey);
     if (reply) return JSON.parse(reply);
 
     const characters = await CharacterModel.paginate(query, options);
 
-    await client.set('characters', JSON.stringify(characters));
+    await client.setEx(cacheKey, 600, JSON.stringify(characters));
 
     return {
       data: characters.docs,
@@ -141,15 +152,16 @@ class CharacterService {
     };
   }
 
-  async getCharacterById(id: characterDto['object_id']) {
-    const affiliate = await CharacterModel.findById(id);
+  async getCharacterById(id: CharacterDto['object_id']) {
+    const character = await CharacterModel.findById(id);
 
-    if (!affiliate) throw new NotFoundError(ErrorMessage.CharacterNotFound);
+    if (!character)
+      throw new NotFoundError(ErrorMessagesKeys.CHARACTER_NOT_FOUND);
 
-    return affiliate;
+    return character;
   }
 
-  async createCharacter(character: characterDto) {
+  async createCharacter(character: CharacterDto) {
     await validateData(character, CharacterModel);
 
     const existingCharacter = await CharacterModel.findOne({
@@ -157,7 +169,7 @@ class CharacterService {
     });
 
     if (existingCharacter)
-      throw new BadRequestError(ErrorMessage.CharacterAlreadyExists);
+      throw new BadRequestError(ErrorMessagesKeys.CHARACTER_ALREADY_EXISTS);
 
     const lastCharacter = await CharacterModel.findOne()
       .sort({ id: -1 })
@@ -171,8 +183,8 @@ class CharacterService {
   }
 
   async updateCharacter(
-    id: characterDto['object_id'],
-    character: Partial<characterDto>
+    id: CharacterDto['object_id'],
+    character: Partial<CharacterDto>
   ) {
     const updatedCharacter = await CharacterModel.findOneAndUpdate(
       { _id: id },
@@ -181,45 +193,26 @@ class CharacterService {
     );
 
     if (!updatedCharacter)
-      throw new NotFoundError(ErrorMessage.CharacterNotFound);
+      throw new NotFoundError(ErrorMessagesKeys.CHARACTER_NOT_FOUND);
 
     return updatedCharacter;
   }
 
-  async deleteCharacter(id: characterDto['object_id']) {
+  async deleteCharacter(id: CharacterDto['object_id']) {
     const deletedCharacter = await CharacterModel.findOneAndDelete({ _id: id });
 
     if (!deletedCharacter)
-      throw new NotFoundError(ErrorMessage.CharacterNotFound);
+      throw new NotFoundError(ErrorMessagesKeys.CHARACTER_NOT_FOUND);
 
     return { message: 'Character deleted successfully' };
   }
 
-  async exportCharactersToExcel(queryParams: generalSearchDto, email: string) {
-    const { options } = pagination(queryParams);
-
-    const query: Record<string, any> = {
-      ...(queryParams.search && {
-        $or: [
-          { name: { $regex: queryParams.search, $options: 'i' } },
-          { description: { $regex: queryParams.search, $options: 'i' } },
-        ],
-      }),
-      ...(queryParams.race && { race: queryParams.race }),
-      ...(queryParams.gender && { gender: queryParams.gender }),
-    };
-
-    if (queryParams.ki_min || queryParams.ki_max) {
-      query.ki = Object.assign(
-        {},
-        queryParams.ki_min && { $gte: queryParams.ki_min },
-        queryParams.ki_max && { $lte: queryParams.ki_max }
-      );
-    }
-
-    const characters = await CharacterModel.find(query)
-      .sort(options.sort)
-      .select('id name ki max_ki race gender description');
+  async exportCharactersToExcel(
+    queryParams: GeneralSearchDtoWithKiFilters,
+    email: string
+  ) {
+    queryParams.page_size = await CharacterModel.countDocuments();
+    const characters = await this.getCharacters(queryParams);
 
     const workbook = new exceljs.Workbook();
     const worksheet = workbook.addWorksheet('Characters');
@@ -234,9 +227,9 @@ class CharacterService {
       { header: 'description', key: 'description', width: 20 },
     ];
 
-    characters.forEach((character) => {
+    characters.data.forEach((character: CharacterDto) => {
       worksheet.addRow({
-        id: character.id,
+        id: character.character_number,
         name: character.name,
         ki: character.ki,
         maxKi: character.max_ki,
@@ -249,10 +242,19 @@ class CharacterService {
 
     const buffer = await workbook.xlsx.writeBuffer();
 
-    console.log('email:', email);
-
     await sendExcelByEmail(email, buffer as Buffer);
+
     return buffer;
+  }
+
+  async getCharacterNumbers() {
+    const characters = await CharacterModel.find(
+      {},
+      { character_number: 1, _id: 0 }
+    );
+    const usedNumbers = new Set(characters.map((c) => c.character_number));
+
+    return usedNumbers;
   }
 }
 

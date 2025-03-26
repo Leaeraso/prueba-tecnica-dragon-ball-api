@@ -14,8 +14,8 @@ const pagination = (queryParams) => {
     else if (queryParams.ki_min || queryParams.ki_max) {
         sortOptions['ki'] = sort_enum_1.SortEnum.ASC;
     }
-    if (Object.keys(sortOptions).length === 0) {
-        sortOptions['id'] = sort_enum_1.SortEnum.ASC;
+    else {
+        sortOptions['character_number'] = sort_enum_1.SortEnum.ASC;
     }
     const options = {
         page: queryParams.page || 1,

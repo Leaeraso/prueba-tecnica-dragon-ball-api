@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import config from '../config/index';
 import { InternalServerError } from '../config/errors';
-import { ErrorMessage } from '../config/errors/messages.enum';
+import { ErrorMessagesKeys } from '../config/errors/error-messages';
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
@@ -34,7 +34,7 @@ const sendExcelByEmail = async (email: string, excelBuffer: Buffer) => {
     console.log('Mail sent successfully');
   } catch (error) {
     console.error('Error sending the mail: ', error);
-    throw new InternalServerError(ErrorMessage.ErrorSendingEmail);
+    throw new InternalServerError(ErrorMessagesKeys.ERROR_SENDING_EMAIL);
   }
 };
 

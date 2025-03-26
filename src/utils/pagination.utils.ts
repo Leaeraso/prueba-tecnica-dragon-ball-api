@@ -1,7 +1,7 @@
-import { generalSearchDto } from '../data/dtos/general-search.dto';
+import { GeneralSearchDtoWithKiFilters } from '../data/dtos/general-search.dto';
 import { SortEnum } from '../data/enums/sort.enum';
 
-export const pagination = (queryParams: generalSearchDto) => {
+export const pagination = (queryParams: GeneralSearchDtoWithKiFilters) => {
   const sortOptions: Record<string, 1 | -1> = {};
 
   if (queryParams.sort) {
@@ -11,10 +11,8 @@ export const pagination = (queryParams: generalSearchDto) => {
         : SortEnum.DESC;
   } else if (queryParams.ki_min || queryParams.ki_max) {
     sortOptions['ki'] = SortEnum.ASC;
-  }
-
-  if (Object.keys(sortOptions).length === 0) {
-    sortOptions['id'] = SortEnum.ASC;
+  } else {
+    sortOptions['character_number'] = SortEnum.ASC;
   }
 
   const options = {

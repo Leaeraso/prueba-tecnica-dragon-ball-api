@@ -1,6 +1,9 @@
-import { Model } from 'mongoose';
+import { Model, Document } from 'mongoose';
 
-const validateData = async (data: any, model: Model<any>) => {
+const validateData = async <T extends Document>(
+  data: Record<string, any>,
+  model: Model<T>
+) => {
   try {
     const schemaKeys = Object.keys(model.schema.paths);
     const filteredData = Object.keys(data)
