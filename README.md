@@ -54,7 +54,13 @@ npm install
 
 **Explicación mas abajo**
 
-#### 4. Iniciar el servidor
+#### 4. Iniciar redis
+
+```
+docker-compose up -d
+
+```
+#### 5. Iniciar el servidor
 
 ```
 npm run start:dev
@@ -92,7 +98,7 @@ npm run start:dev
 Para utilizar la documentación de la API y probar los endpoints, iniciar el servidor y entrar al siguiente endpoint:
 
 ```
-http://localhost:3000/documentation/
+http://localhost:3000/api-docs/
 
 ```
 
