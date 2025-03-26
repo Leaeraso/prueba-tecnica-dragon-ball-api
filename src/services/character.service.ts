@@ -8,7 +8,7 @@ import { BadRequestError, NotFoundError } from '../config/errors';
 import validateData from '../helpers/validate.helper';
 import exceljs from 'exceljs';
 import sendExcelByEmail from '../utils/nodemailer.utils';
-import RedisConnection from '../config/redis.config';
+// import RedisConnection from '../config/redis.config';
 import { ErrorMessagesKeys } from '../config/errors/error-messages';
 import parseKi from '../utils/parseKi.utils';
 
@@ -20,7 +20,7 @@ interface ApiResponse {
   };
 }
 
-const client = RedisConnection.getClient();
+// const client = RedisConnection.getClient();
 
 class CharacterService {
   async fetchCharacters() {
@@ -62,21 +62,32 @@ class CharacterService {
   async saveCharactersInBatches(characters: CharacterDto[]) {
     const batchSize = 10;
 
-    console.log('characters length: ', characters.length);
+    let usedNumbers = await this.getCharacterNumbers();
 
     for (let i = 0; i < characters.length; i += batchSize) {
       const batch = characters.slice(i, i + batchSize);
 
-      // const nextCharacterNumber = await this.getNextCharacterNumber();
-
       const results = await Promise.allSettled(
-        batch.map((character) =>
-          CharacterModel.updateOne(
-            { character_number: character.character_number },
+        batch.map(async (character) => {
+          const existingCharacter = await CharacterModel.findOne({
+            name: character.name,
+          });
+
+          if (existingCharacter) {
+            character.character_number = existingCharacter.character_number;
+          } else {
+            while (usedNumbers.has(character.character_number)) {
+              character.character_number++;
+            }
+            usedNumbers.add(character.character_number);
+          }
+
+          await CharacterModel.updateOne(
+            { name: character.name },
             { $set: character },
             { upsert: true }
-          )
-        )
+          );
+        })
       );
 
       results.forEach((result, index) => {
@@ -122,14 +133,14 @@ class CharacterService {
       );
     }
 
-    const cacheKey = `characters:${JSON.stringify(queryParams)}`;
+    // const cacheKey = `characters:${JSON.stringify(queryParams)}`;
 
-    const reply = await client.get(cacheKey);
-    if (reply) return JSON.parse(reply);
+    // const reply = await client.get(cacheKey);
+    // if (reply) return JSON.parse(reply);
 
     const characters = await CharacterModel.paginate(query, options);
 
-    await client.setEx(cacheKey, 600, JSON.stringify(characters));
+    // await client.setEx(cacheKey, 600, JSON.stringify(characters));
 
     return {
       data: characters.docs,
@@ -201,7 +212,6 @@ class CharacterService {
     email: string
   ) {
     const characters = await this.getCharacters(queryParams);
-    console.log('characters: ', characters.docs);
 
     const workbook = new exceljs.Workbook();
     const worksheet = workbook.addWorksheet('Characters');
@@ -216,7 +226,7 @@ class CharacterService {
       { header: 'description', key: 'description', width: 20 },
     ];
 
-    characters.docs.forEach((character: CharacterDto) => {
+    characters.data.forEach((character) => {
       worksheet.addRow({
         id: character.character_number,
         name: character.name,
@@ -236,11 +246,14 @@ class CharacterService {
     return buffer;
   }
 
-  async getNextCharacterNumber() {
-    const lastCharacter = await CharacterModel.findOne()
-      .sort({ character_number: -1 })
-      .limit(1);
-    return lastCharacter ? lastCharacter.character_number + 1 : 1;
+  async getCharacterNumbers() {
+    const characters = await CharacterModel.find(
+      {},
+      { character_number: 1, _id: 0 }
+    );
+    const usedNumbers = new Set(characters.map((c) => c.character_number));
+
+    return usedNumbers;
   }
 }
 

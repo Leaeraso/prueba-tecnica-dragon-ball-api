@@ -34,3 +34,20 @@
 ✅ Middleware de validacion de token, el error respondido tampoco esta en el archivo de errores.
 
 ✅ Swagger, la ruta de fetch-characters-data tiene un typo y no funciona
+
+<!-- / Verificar si el personaje ya existe en la base de datos
+                const existingCharacter = await CharacterModel.findOne({
+                    character_number: character.character_number,
+                });
+
+                // Si el character_number ya está en uso, obtener uno nuevo
+                if (existingCharacter) {
+                    character.character_number = await this.getNextCharacterNumber();
+                }
+
+                return CharacterModel.updateOne(
+                    { character_number: character.character_number },
+                    { $set: character },
+                    { upsert: true }
+                );
+            }) -->

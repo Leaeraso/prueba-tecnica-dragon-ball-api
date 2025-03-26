@@ -20,10 +20,10 @@ const errors_1 = require("../config/errors");
 const validate_helper_1 = __importDefault(require("../helpers/validate.helper"));
 const exceljs_1 = __importDefault(require("exceljs"));
 const nodemailer_utils_1 = __importDefault(require("../utils/nodemailer.utils"));
-const redis_config_1 = __importDefault(require("../config/redis.config"));
+// import RedisConnection from '../config/redis.config';
 const error_messages_1 = require("../config/errors/error-messages");
 const parseKi_utils_1 = __importDefault(require("../utils/parseKi.utils"));
-const client = redis_config_1.default.getClient();
+// const client = RedisConnection.getClient();
 class CharacterService {
     fetchCharacters() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -57,10 +57,24 @@ class CharacterService {
     saveCharactersInBatches(characters) {
         return __awaiter(this, void 0, void 0, function* () {
             const batchSize = 10;
-            console.log('characters length: ', characters.length);
+            let usedNumbers = yield this.getCharacterNumbers();
             for (let i = 0; i < characters.length; i += batchSize) {
                 const batch = characters.slice(i, i + batchSize);
-                const results = yield Promise.allSettled(batch.map((character) => character_schema_1.default.updateOne({ character_number: character.character_number }, { $set: character }, { upsert: true })));
+                const results = yield Promise.allSettled(batch.map((character) => __awaiter(this, void 0, void 0, function* () {
+                    const existingCharacter = yield character_schema_1.default.findOne({
+                        name: character.name,
+                    });
+                    if (existingCharacter) {
+                        character.character_number = existingCharacter.character_number;
+                    }
+                    else {
+                        while (usedNumbers.has(character.character_number)) {
+                            character.character_number++;
+                        }
+                        usedNumbers.add(character.character_number);
+                    }
+                    yield character_schema_1.default.updateOne({ name: character.name }, { $set: character }, { upsert: true });
+                })));
                 results.forEach((result, index) => {
                     if (result.status === 'rejected') {
                         console.error(`Error saving character ${batch[index].character_number}: ${result.reason} `);
@@ -90,12 +104,11 @@ class CharacterService {
             if (queryParams.ki_min || queryParams.ki_max) {
                 query.ki = Object.assign({}, queryParams.ki_min && { $gte: queryParams.ki_min }, queryParams.ki_max && { $lte: queryParams.ki_max });
             }
-            const cacheKey = `characters:${JSON.stringify(queryParams)}`;
-            const reply = yield client.get(cacheKey);
-            if (reply)
-                return JSON.parse(reply);
+            // const cacheKey = `characters:${JSON.stringify(queryParams)}`;
+            // const reply = await client.get(cacheKey);
+            // if (reply) return JSON.parse(reply);
             const characters = yield character_schema_1.default.paginate(query, options);
-            yield client.setEx(cacheKey, 600, JSON.stringify(characters));
+            // await client.setEx(cacheKey, 600, JSON.stringify(characters));
             return {
                 data: characters.docs,
                 paginate: {
@@ -150,7 +163,6 @@ class CharacterService {
     exportCharactersToExcel(queryParams, email) {
         return __awaiter(this, void 0, void 0, function* () {
             const characters = yield this.getCharacters(queryParams);
-            console.log('characters: ', characters.docs);
             const workbook = new exceljs_1.default.Workbook();
             const worksheet = workbook.addWorksheet('Characters');
             worksheet.columns = [
@@ -162,7 +174,7 @@ class CharacterService {
                 { header: 'gender', key: 'gender', width: 20 },
                 { header: 'description', key: 'description', width: 20 },
             ];
-            characters.docs.forEach((character) => {
+            characters.data.forEach((character) => {
                 worksheet.addRow({
                     id: character.character_number,
                     name: character.name,
@@ -177,6 +189,13 @@ class CharacterService {
             const buffer = yield workbook.xlsx.writeBuffer();
             yield (0, nodemailer_utils_1.default)(email, buffer);
             return buffer;
+        });
+    }
+    getCharacterNumbers() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const characters = yield character_schema_1.default.find({}, { character_number: 1, _id: 0 });
+            const usedNumbers = new Set(characters.map((c) => c.character_number));
+            return usedNumbers;
         });
     }
 }
