@@ -8,9 +8,9 @@ import { BadRequestError, NotFoundError } from '../config/errors';
 import validateData from '../helpers/validate.helper';
 import exceljs from 'exceljs';
 import sendExcelByEmail from '../utils/nodemailer.utils';
-// import RedisConnection from '../config/redis.config';
+import RedisConnection from '../config/redis.config';
 import { ErrorMessagesKeys } from '../config/errors/error-messages';
-import parseKi from '../utils/parseKi.utils';
+import parseKi from '../utils/parse-ki.utils';
 
 interface ApiResponse {
   items: any[];
@@ -20,7 +20,7 @@ interface ApiResponse {
   };
 }
 
-// const client = RedisConnection.getClient();
+const client = RedisConnection.getClient();
 
 class CharacterService {
   async fetchCharacters() {
@@ -133,14 +133,14 @@ class CharacterService {
       );
     }
 
-    // const cacheKey = `characters:${JSON.stringify(queryParams)}`;
+    const cacheKey = `characters:${JSON.stringify(queryParams)}`;
 
-    // const reply = await client.get(cacheKey);
-    // if (reply) return JSON.parse(reply);
+    const reply = await client.get(cacheKey);
+    if (reply) return JSON.parse(reply);
 
     const characters = await CharacterModel.paginate(query, options);
 
-    // await client.setEx(cacheKey, 600, JSON.stringify(characters));
+    await client.setEx(cacheKey, 600, JSON.stringify(characters));
 
     return {
       data: characters.docs,
@@ -211,6 +211,7 @@ class CharacterService {
     queryParams: GeneralSearchDtoWithKiFilters,
     email: string
   ) {
+    queryParams.page_size = await CharacterModel.countDocuments();
     const characters = await this.getCharacters(queryParams);
 
     const workbook = new exceljs.Workbook();
@@ -226,7 +227,7 @@ class CharacterService {
       { header: 'description', key: 'description', width: 20 },
     ];
 
-    characters.data.forEach((character) => {
+    characters.data.forEach((character: CharacterDto) => {
       worksheet.addRow({
         id: character.character_number,
         name: character.name,

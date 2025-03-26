@@ -20,10 +20,10 @@ const errors_1 = require("../config/errors");
 const validate_helper_1 = __importDefault(require("../helpers/validate.helper"));
 const exceljs_1 = __importDefault(require("exceljs"));
 const nodemailer_utils_1 = __importDefault(require("../utils/nodemailer.utils"));
-// import RedisConnection from '../config/redis.config';
+const redis_config_1 = __importDefault(require("../config/redis.config"));
 const error_messages_1 = require("../config/errors/error-messages");
-const parseKi_utils_1 = __importDefault(require("../utils/parseKi.utils"));
-// const client = RedisConnection.getClient();
+const parse_ki_utils_1 = __importDefault(require("../utils/parse-ki.utils"));
+const client = redis_config_1.default.getClient();
 class CharacterService {
     fetchCharacters() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -41,8 +41,8 @@ class CharacterService {
                 const pageCharacters = response.data.items.map((character) => ({
                     character_number: character.id,
                     name: character.name,
-                    ki: (0, parseKi_utils_1.default)(character.ki),
-                    max_ki: (0, parseKi_utils_1.default)(character.maxKi),
+                    ki: (0, parse_ki_utils_1.default)(character.ki),
+                    max_ki: (0, parse_ki_utils_1.default)(character.maxKi),
                     race: character.race,
                     gender: character.gender,
                     description: character.description,
@@ -104,11 +104,12 @@ class CharacterService {
             if (queryParams.ki_min || queryParams.ki_max) {
                 query.ki = Object.assign({}, queryParams.ki_min && { $gte: queryParams.ki_min }, queryParams.ki_max && { $lte: queryParams.ki_max });
             }
-            // const cacheKey = `characters:${JSON.stringify(queryParams)}`;
-            // const reply = await client.get(cacheKey);
-            // if (reply) return JSON.parse(reply);
+            const cacheKey = `characters:${JSON.stringify(queryParams)}`;
+            const reply = yield client.get(cacheKey);
+            if (reply)
+                return JSON.parse(reply);
             const characters = yield character_schema_1.default.paginate(query, options);
-            // await client.setEx(cacheKey, 600, JSON.stringify(characters));
+            yield client.setEx(cacheKey, 600, JSON.stringify(characters));
             return {
                 data: characters.docs,
                 paginate: {
@@ -162,6 +163,7 @@ class CharacterService {
     }
     exportCharactersToExcel(queryParams, email) {
         return __awaiter(this, void 0, void 0, function* () {
+            queryParams.page_size = yield character_schema_1.default.countDocuments();
             const characters = yield this.getCharacters(queryParams);
             const workbook = new exceljs_1.default.Workbook();
             const worksheet = workbook.addWorksheet('Characters');
